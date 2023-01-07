@@ -1,4 +1,4 @@
-datanba_2016 = "https://github.com/shufinskiy/nba_data/raw/main/datasets/datanba_2016.tar.xz"
+datanba_2016=https://github.com/shufinskiy/nba_data/raw/main/datasets/datanba_2016.tar.xz
 datanba_2017 = "https://github.com/shufinskiy/nba_data/raw/main/datasets/datanba_2017.tar.xz"
 datanba_2018 = "https://github.com/shufinskiy/nba_data/raw/main/datasets/datanba_2018.tar.xz"
 datanba_2019 = "https://github.com/shufinskiy/nba_data/raw/main/datasets/datanba_2019.tar.xz"
