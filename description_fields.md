@@ -2,25 +2,25 @@
 
 | Field | Description|
 |-------|------------|
-|**GAME_ID**||
-|**EVENTNUM**||
+|**GAME_ID**|Game ID|
+|**EVENTNUM**|Sequence number of the event in the game|
 |**EVENTMSGTYPE**||
 |**EVENTMSGACTIONTYPE**||
-|**PERIOD**||
+|**PERIOD**|Quarter number|
 |**WCTIMESTRING**||
-|**PCTIMESTRING**||
-|**HOMEDESCRIPTION**||
-|**NEUTRALDESCRIPTION**||
-|**VISITORDESCRIPTION**||
-|**SCORE**||
-|**SCOREMARGIN**||
+|**PCTIMESTRING**|Time until end of the quarter|
+|**HOMEDESCRIPTION**|Description of the action of home team|
+|**NEUTRALDESCRIPTION**|Description of the neutral action|
+|**VISITORDESCRIPTION**|Description of the action of away team|
+|**SCORE**|Game score|
+|**SCOREMARGIN**|Difference in score|
 |**PERSON1TYPE**||
-|**PLAYER1_ID**||
-|**PLAYER1_NAME**||
-|**PLAYER1_TEAM_ID**||
-|**PLAYER1_TEAM_CITY**||
-|**PLAYER1_TEAM_NICKNAME**||
-|**PLAYER1_TEAM_ABBREVIATION**||
+|**PLAYER1_ID**|ID of player who performed main action|
+|**PLAYER1_NAME**|Name of player who performed main action|
+|**PLAYER1_TEAM_ID**|Team ID of player who performed main action|
+|**PLAYER1_TEAM_CITY**|Team city of player who performed main action|
+|**PLAYER1_TEAM_NICKNAME**|Team nickname of player who performed main action|
+|**PLAYER1_TEAM_ABBREVIATION**|Team abbreviation of player who performed main action|
 |**PERSON2TYPE**||
 |**PLAYER2_ID**||
 |**PLAYER2_NAME**||
@@ -35,7 +35,7 @@
 |**PLAYER3_TEAM_CITY**||
 |**PLAYER3_TEAM_NICKNAME**||
 |**PLAYER3_TEAM_ABBREVIATION**||
-|**VIDEO_AVAILABLE_FLAG**||
+|**VIDEO_AVAILABLE_FLAG**|Is a video of the event available?|
 
 ### shotdetail
 
