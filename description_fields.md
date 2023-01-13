@@ -22,49 +22,49 @@
 |**PLAYER1_TEAM_NICKNAME**|Team nickname of player who performed main action|
 |**PLAYER1_TEAM_ABBREVIATION**|Team abbreviation of player who performed main action|
 |**PERSON2TYPE**||
-|**PLAYER2_ID**||
-|**PLAYER2_NAME**||
-|**PLAYER2_TEAM_ID**||
-|**PLAYER2_TEAM_CITY**||
-|**PLAYER2_TEAM_NICKNAME**||
-|**PLAYER2_TEAM_ABBREVIATION**||
+|**PLAYER2_ID**|ID of player who performed side action|
+|**PLAYER2_NAME**|Name of player who performed side action|
+|**PLAYER2_TEAM_ID**|Team ID of player who performed side action|
+|**PLAYER2_TEAM_CITY**|Team city of player who performed side action|
+|**PLAYER2_TEAM_NICKNAME**|Team nickname of player who performed side action|
+|**PLAYER2_TEAM_ABBREVIATION**|Team abbreviation of player who performed side action|
 |**PERSON3TYPE**||
-|**PLAYER3_ID**||
-|**PLAYER3_NAME**||
-|**PLAYER3_TEAM_ID**||
-|**PLAYER3_TEAM_CITY**||
-|**PLAYER3_TEAM_NICKNAME**||
-|**PLAYER3_TEAM_ABBREVIATION**||
+|**PLAYER3_ID**|ID of player who performed second side action|
+|**PLAYER3_NAME**|Name of player who performed second side action|
+|**PLAYER3_TEAM_ID**|Team ID of player who performed second side action|
+|**PLAYER3_TEAM_CITY**|Team city of player who performed second side action|
+|**PLAYER3_TEAM_NICKNAME**|Team nickname of player who performed second side action|
+|**PLAYER3_TEAM_ABBREVIATION**|Team abbreviation of player who performed second side action|
 |**VIDEO_AVAILABLE_FLAG**|Is a video of the event available?|
 
 ### shotdetail
 
 | Field | Description|
 |-------|------------|
-|**GRID_TYPE**||
-|**GAME_ID**||
-|**GAME_EVENT_ID**||
-|**PLAYER_ID**||
-|**PLAYER_NAME**||
-|**TEAM_ID**||
-|**TEAM_NAME**||
-|**PERIOD**||
-|**MINUTES_REMAINING**||
-|**SECONDS_REMAINING**||
-|**EVENT_TYPE**||
-|**ACTION_TYPE**||
-|**SHOT_TYPE**||
+|**GRID_TYPE**|Shot Chart Detail|
+|**GAME_ID**|Game ID|
+|**GAME_EVENT_ID**|Sequence number of the event in the game|
+|**PLAYER_ID**|ID of player who made shot|
+|**PLAYER_NAME**|Name of player who made shot|
+|**TEAM_ID**|Team ID of player who made shot|
+|**TEAM_NAME**|Team name of player who made shot|
+|**PERIOD**|Quarter number|
+|**MINUTES_REMAINING**|Minutes remaining until end of the quarter|
+|**SECONDS_REMAINING**|Seconds remaining until end of the quarter|
+|**EVENT_TYPE**|Made or Missed shot|
+|**ACTION_TYPE**|Type of shot|
+|**SHOT_TYPE**|2PT or 3PT shot|
 |**SHOT_ZONE_BASIC**||
 |**SHOT_ZONE_AREA**||
 |**SHOT_ZONE_RANGE**||
-|**SHOT_DISTANCE**||
-|**LOC_X**||
-|**LOC_Y**||
-|**SHOT_ATTEMPTED_FLAG**||
-|**SHOT_MADE_FLAG**||
-|**GAME_DATE**||
-|**HTM**||
-|**VTM**||
+|**SHOT_DISTANCE**|Distance to rim|
+|**LOC_X**|Coordinate of shot along the width of the court relative to its central axis|
+|**LOC_Y**|Coordinate of shot along the length of the court relative to its central axis|
+|**SHOT_ATTEMPTED_FLAG**|Shot execution flag (always 1)|
+|**SHOT_MADE_FLAG**|Shot made flag (0 or 1)|
+|**GAME_DATE**|Game date|
+|**HTM**|Abbreviation of home team|
+|**VTM**|Abbreviation of away team|
 
 ### pbpstats.com
 
