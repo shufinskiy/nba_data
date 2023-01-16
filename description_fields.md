@@ -70,46 +70,46 @@
 
 | Field | Description|
 |-------|------------|
-|**ENDTIME**||
-|**EVENTS**||
-|**FG2A**||
-|**FG2M**||
-|**FG3A**||
-|**FG3M**||
-|**GAMEDATE**||
-|**GAMEID**||
+|**ENDTIME**|Time until end of the quarter at time of end of possession|
+|**EVENTS**|Description of all actions in possession|
+|**FG2A**|Count 2PT FG attempts in possession|
+|**FG2M**|Count 2PT FG made in possession|
+|**FG3A**|Count 3PT FG attempts in possession|
+|**FG3M**|Count 3PT FG made in possession|
+|**GAMEDATE**|Game date|
+|**GAMEID**|Game ID|
 |**NONSHOOTINGFOULSTHATRESULTEDINFTS**||
-|**OFFENSIVEREBOUNDS**||
-|**OPPONENT**||
-|**PERIOD**||
+|**OFFENSIVEREBOUNDS**|Count offensive rebounds in possession|
+|**OPPONENT**|Abbreviation team in defense|
+|**PERIOD**|Quarter number|
 |**SHOOTINGFOULSDRAWN**||
-|**STARTSCOREDIFFERENTIAL**||
-|**STARTTIME**||
+|**STARTSCOREDIFFERENTIAL**|Difference in score on of start of possession|
+|**STARTTIME**|Time until end of the quarter at time of start of possession|
 |**STARTTYPE**||
-|**TURNOVERS**||
-|**DESCRIPTION**||
-|**URL**||
+|**TURNOVERS**|Turnovers|
+|**DESCRIPTION**|Description of action|
+|**URL**|Link to video|
 
 ### data.nba
 
 | Field | Description|
 |-------|------------|
-|**evt**||
-|**cl**||
-|**de**||
-|**locX**||
-|**locY**||
-|**opt1**||
+|**evt**|Sequence number of the event in the game|
+|**cl**|Time until end of the quarter|
+|**de**|Description of the action|
+|**locX**|Coordinate of shot along the width of the court relative to its central axis|
+|**locY**|Coordinate of shot along the length of the court relative to its central axis|
+|**opt1**|Points|
 |**opt2**||
 |**mtype**||
 |**etype**||
 |**opid**||
 |**tid**||
 |**pid**||
-|**hs**||
-|**vs**||
+|**hs**|Home team score|
+|**vs**|Visitor team score|
 |**epid**||
-|**oftid**||
+|**oftid**|Team ID in offense|
 |**ord**||
-|**PERIOD**||
-|**GAME_ID**||
+|**PERIOD**|Quarter number|
+|**GAME_ID**|Game ID|
