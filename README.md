@@ -8,6 +8,13 @@ Play-by-play data collected with help functions from [advanced_pbp_data](https:/
 
 Detailed description data can be read in file [description_fields.md](https://github.com/shufinskiy/nba_data/blob/main/description_fields.md).
 
+### Useful links:
+Ryan Davis - [Analyze the Play by Play Data](https://github.com/rd11490/NBA_Tutorials/tree/master/analyze_play_by_play)
+
+Python nba_api package for work with NBA API - https://github.com/swar/nba_api
+
+R hoopR package for work with NBA API - https://hoopr.sportsdataverse.org/
+
 ## Motivation
 
 I made this dataset because I want to simplify and speed up work with play-by-play data so that researchers spend their time studying data, not collecting it. Due to the limits on requests on the NBA website, and also because you can get play-by-play of only one game per request, collecting this data is a very long process.
