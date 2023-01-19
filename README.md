@@ -10,6 +10,12 @@ Detailed description data can be read in file [description_fields.md](https://gi
 
 ## Motivation
 
+I made this dataset because I want to simplify and speed up work with play-by-play data so that researchers spend their time studying data, not collecting it. Due to the limits on requests on the NBA website, and also because you can get play-by-play of only one game per request, collecting this data is a very long process.
+
+Using this dataset, you can reduce the time to get information about one season from a few hours to a couple of seconds and spend more time analyzing data or building models.
+
+I also added play-by-play information from other sources: **pbpstats.com** (there is information about the time of ownership and the type of its beginning) and **data.nba.com** (there you can find coordinates of actions on court). This data will enrich information about the progress of each game and hopefully add opportunities to do interesting things.
+
 ## Download
 
 You can download dataset several ways:
