@@ -8,6 +8,8 @@ Play-by-play data collected with help functions from [advanced_pbp_data](https:/
 
 Detailed description data can be read in file [description_fields.md](https://github.com/shufinskiy/nba_data/blob/main/description_fields.md).
 
+**Note: dataset contains only Regular Season data, without play-off**
+
 ### Useful links:
 Ryan Davis - [Analyze the Play by Play Data](https://github.com/rd11490/NBA_Tutorials/tree/master/analyze_play_by_play)
 
