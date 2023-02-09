@@ -1,4 +1,4 @@
-### Dataset NBA Regular season play-by-play data and shotdetails from 1996/1997 to 2021/22
+### Dataset NBA Regular season play-by-play data and shotdetails from 1996/1997 to 2022/23
 
 ## Description
 Dataset contains play-by-play data from three sources: **stats.nba.com**, **data.nba.com** and **pbpstats.com** and also **shots details**.
@@ -102,7 +102,7 @@ def get_nba_data(seasons=range(1996, 2022),
             Path("".join([need_name[i], ".tar.xz"])).unlink()
 ```
 
-**Download from Google Drive**
+**Download from Google Drive (without season 2022/23)**
 
 You can also download full version of the dataset from [GoogleDrive](https://drive.google.com/file/d/1SqLZC_OlWkJyv4sJV3N8IpFZMTv9zvef/view?usp=sharing).
 
