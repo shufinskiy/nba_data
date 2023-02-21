@@ -102,6 +102,10 @@ def get_nba_data(seasons=range(1996, 2022),
             Path("".join([need_name[i], ".tar.xz"])).unlink()
 ```
 
+**[Dataset on Kaggle](https://www.kaggle.com/datasets/brains14482/nba-playbyplay-and-shotdetails-data-19962021)**
+
+Kaggle [notebook](https://www.kaggle.com/code/brains14482/nba-play-by-play-dataset-r-example) with examples work with dataset (**R**)
+
 **Download from Google Drive (without season 2022/23)**
 
 You can also download full version of the dataset from [GoogleDrive](https://drive.google.com/file/d/1SqLZC_OlWkJyv4sJV3N8IpFZMTv9zvef/view?usp=sharing).
