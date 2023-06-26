@@ -332,20 +332,20 @@ processing_args_command_line <- function(args, need_arg, default_value, as_func 
   return(arg)
 }
 
-command_line_work <- function(){
-  args <- commandArgs(trailingOnly = TRUE)
-  
-  season <- processing_args_command_line(args, "--season", 2020)
-  start <- processing_args_command_line(args, c('-s', '--start'), 1)
-  end <- processing_args_command_line(args, c('-e', '--end'), 1230)
-  early_stop <- processing_args_command_line(args, '--stop', 5)
-  verbose <- processing_args_command_line(args, c('-v', '--verbose'), "FALSE", "as.character")
-  datatype <- processing_args_command_line(args, "-d", "pbp", "as.character")
-  player_id <- processing_args_command_line(args, c("-p1", "--player_id"), NA)
-  partner_id <- processing_args_command_line(args, c("-p2", "--partner_id"), NA)
-  
-  return(list(season, start, end, early_stop, verbose, datatype, player_id, partner_id))  
-}
+# command_line_work <- function(){
+#   args <- commandArgs(trailingOnly = TRUE)
+#   
+#   season <- processing_args_command_line(args, "--season", 2020)
+#   start <- processing_args_command_line(args, c('-s', '--start'), 1)
+#   end <- processing_args_command_line(args, c('-e', '--end'), 1230)
+#   early_stop <- processing_args_command_line(args, '--stop', 5)
+#   verbose <- processing_args_command_line(args, c('-v', '--verbose'), "FALSE", "as.character")
+#   datatype <- processing_args_command_line(args, "-d", "pbp", "as.character")
+#   player_id <- processing_args_command_line(args, c("-p1", "--player_id"), NA)
+#   partner_id <- processing_args_command_line(args, c("-p2", "--partner_id"), NA)
+#   
+#   return(list(season, start, end, early_stop, verbose, datatype, player_id, partner_id))  
+# }
 
 loading_nba_data <- function(){
   
