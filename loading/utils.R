@@ -235,6 +235,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
   
   exists_folder(path=paste0('datasets/', season))
   exists_folder(path=paste0('datasets/', season, '/nbastats'))
+  exists_folder(path=paste0('datasets/', season, '/shotdetail'))
   if (season >= 2000){
     exists_folder(path=paste0('datasets/', season, '/pbpstats'))
   }
@@ -244,6 +245,9 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
   
   early_st <- 0
   sleep <- 1
+  
+  get_season_shot_details(season)
+  
   gamelog <- league_game_log(season = season)
   
   for (i in seq(start, end)){
@@ -363,13 +367,6 @@ get_shot_details <- function(team_id, season, ...){
 
 get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
   season <- as.integer(season)
-  if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season))))){
-    dir.create(suppressWarnings(normalizePath(paste0('datasets/', season))), recursive = TRUE)
-  }
-  
-  if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season, '/shotdetail'))))){
-    dir.create(suppressWarnings(normalizePath(paste0('datasets/', season, '/shotdetail'))), recursive = TRUE)
-  }
   
   early_st <- 0
   for (i in seq_along(team_dict)){
