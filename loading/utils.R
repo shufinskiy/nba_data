@@ -51,6 +51,12 @@ command_line_work <- function(func){
   do.call(func, list(season, start, end, early_stop, verbose))
 }
 
+exists_folder <- function(path, recursive = TRUE){
+  if (!dir.exists(suppressWarnings(normalizePath(path)))){
+    dir.create(suppressWarnings(normalizePath(path)), recursive = TRUE)
+  }
+}
+
 ### Get endpoints name
 re_type_stats <- function(url){
   return(str_extract(url, '(?<=\\/)[:alnum:]+(?=\\?)'))
@@ -143,7 +149,23 @@ trycatch_pbpstats <- function(url, season, t, pbpstats_request_headers, param_po
            })
 }
 
-get_nba_data <- function(GameID, season, gamelog, ...){
+league_game_log <- function(season, ...){
+  url <- 'https://stats.nba.com/stats/leaguegamelog?'
+  
+  count <- 1
+  response <- requests_nba(url, count, 5, Season = season, ...)
+  json <- fromJSON(content(response, as = "text"))
+  
+  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
+  if(is.null(nba_data)){
+    return(NULL)
+  }
+  names(nba_data) <- json$resultSets$headers[[1]]
+  
+  return(nba_data)
+}
+
+load_datanba <- function(GameID, season, gamelog, ...){
   GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
   url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", GameID, "_full_pbp.json")
   
@@ -160,7 +182,7 @@ get_nba_data <- function(GameID, season, gamelog, ...){
   return(data)
 }
 
-get_pbp_stats <- function(GameID, season, gamelog, ...){
+load_pbpstats <- function(GameID, season, gamelog, ...){
   
   ### Get game date
   if (season < 2000){
@@ -190,7 +212,7 @@ get_pbp_stats <- function(GameID, season, gamelog, ...){
   return(pbp_data)
 }
 
-get_nba_pbp <- function(GameID, season, gamelog, ...){
+load_playbyplayv2 <- function(GameID, season, gamelog, ...){
   GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
   url <- 'https://stats.nba.com/stats/playbyplayv2?'
   
@@ -209,25 +231,49 @@ get_nba_pbp <- function(GameID, season, gamelog, ...){
   return(nba_data)
 }
 
-league_game_log <- function(season, ...){
-  url <- 'https://stats.nba.com/stats/leaguegamelog?'
+load_shotchartdetail <- function(team_id, season, ...){
+  url <- 'https://stats.nba.com/stats/shotchartdetail?'
+  season <- str_c(season, str_sub(season + 1, 3, 4), sep='-')
   
   count <- 1
-  response <- requests_nba(url, count, 5, Season = season, ...)
-  json <- fromJSON(content(response, as = "text"))
-  
-  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
-  if(is.null(nba_data)){
-    return(NULL)
-  }
-  names(nba_data) <- json$resultSets$headers[[1]]
-  
+  response <- requests_nba(url, count, 5, TeamID = as.character(team_id), Season = season, ...)
+  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
+  raw_data <- json$resultSets$rowSet[[1]]
+  col_names <- json$resultSets$headers[[1]]
+  nba_data <- data.frame(matrix(unlist(raw_data), ncol = length(col_names), byrow = FALSE))
+  tryCatch({names(nba_data) <- col_names}, error = function(e) return(nba_data))
   return(nba_data)
 }
 
-exists_folder <- function(path, recursive = TRUE){
-  if (!dir.exists(suppressWarnings(normalizePath(path)))){
-    dir.create(suppressWarnings(normalizePath(path)), recursive = TRUE)
+get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
+  season <- as.integer(season)
+  
+  early_st <- 0
+  for (i in seq_along(team_dict)){
+    
+    if (file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))))){
+      next
+    }
+    
+    t <- load_shotchartdetail(team_dict[[i]], season)
+    if (sum(dim(t)) == 0){
+      early_st <- early_st + 1
+      if (early_st >= early_stop){
+        break
+      } else {
+        Sys.sleep(5)
+        next
+      }
+    }
+    early_st <- 0
+    
+    write.csv(t, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))),
+              row.names = FALSE)
+    if (as.logical(verbose)){
+      print(paste('Shot details сезона', stringr::str_c(season, stringr::str_sub(season + 1, 3, 4), sep='-'), names(team_dict[i]), 
+                  'сохранены в папке', normalizePath(paste('./datasets', season, '/shotdetail', sep = '/'))))
+    }
+    Sys.sleep(5)
   }
 }
 
@@ -264,20 +310,20 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
       }
       
       sleep <- sleep + 1
-      for(n in c("get_nba_pbp"[exists_nbastats], "get_pbp_stats"[exists_pbpstats], "get_nba_data"[exists_nbadata])){
+      for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
         if(season < 2000){
-          if(n %in% c("get_pbp_stats")){
+          if(n %in% c("load_pbpstats")){
             next
           }
         } else if(season < 2016){
-          if(n == "get_nba_data"){
+          if(n == "load_datanba"){
             next
           }
         }
         
         dt <- do.call(n, list(GameID = i, season = season, gamelog = gamelog))
         
-        if(n == "get_nba_pbp"){
+        if(n == "load_playbyplayv2"){
           if (is.null(dt)){
             early_st <- early_st + 1
             if (early_st >= early_stop){
@@ -290,9 +336,9 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
         }
         early_st <- 0
         folder <- switch(n,
-                         "get_nba_pbp" = "nbastats",
-                         "get_pbp_stats" = "pbpstats",
-                         "get_nba_data" = "datanba")
+                         "load_playbyplayv2" = "nbastats",
+                         "load_pbpstats" = "pbpstats",
+                         "load_datanba" = "datanba")
         
         write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/', folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
                   row.names = FALSE)
@@ -348,51 +394,5 @@ loading_nba_data <- function(){
     do.call("get_commonal_players", list(args[[1]], args[[5]]))
   } else {
     stop("Введён неверный аргумент datatype")
-  }
-}
-
-get_shot_details <- function(team_id, season, ...){
-  url <- 'https://stats.nba.com/stats/shotchartdetail?'
-  season <- str_c(season, str_sub(season + 1, 3, 4), sep='-')
-  
-  count <- 1
-  response <- requests_nba(url, count, 5, TeamID = as.character(team_id), Season = season, ...)
-  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
-  raw_data <- json$resultSets$rowSet[[1]]
-  col_names <- json$resultSets$headers[[1]]
-  nba_data <- data.frame(matrix(unlist(raw_data), ncol = length(col_names), byrow = FALSE))
-  tryCatch({names(nba_data) <- col_names}, error = function(e) return(nba_data))
-  return(nba_data)
-}
-
-get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
-  season <- as.integer(season)
-  
-  early_st <- 0
-  for (i in seq_along(team_dict)){
-    
-    if (file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))))){
-      next
-    }
-    
-    t <- get_shot_details(team_dict[[i]], season)
-    if (sum(dim(t)) == 0){
-      early_st <- early_st + 1
-      if (early_st >= early_stop){
-        break
-      } else {
-        Sys.sleep(5)
-        next
-      }
-    }
-    early_st <- 0
-    
-    write.csv(t, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))),
-              row.names = FALSE)
-    if (as.logical(verbose)){
-      print(paste('Shot details сезона', stringr::str_c(season, stringr::str_sub(season + 1, 3, 4), sep='-'), names(team_dict[i]), 
-                  'сохранены в папке', normalizePath(paste('./datasets', season, '/shotdetail', sep = '/'))))
-    }
-    Sys.sleep(5)
   }
 }
