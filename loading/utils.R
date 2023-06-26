@@ -237,26 +237,21 @@ get_boxscore_summary <- function(GameID, season, headers = c('all', "GameSummary
   }
 }
 
+exists_folder <- function(path, recursive = TRUE){
+  if (!dir.exists(suppressWarnings(normalizePath(path)))){
+    dir.create(suppressWarnings(normalizePath(path)), recursive = TRUE)
+  }
+}
+
 get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbose='FALSE'){
   
-  if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season))))){
-    dir.create(suppressWarnings(normalizePath(paste0('datasets/', season))), recursive = TRUE)
-  }
-  
-  if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season, '/nbastats'))))){
-    dir.create(suppressWarnings(normalizePath(paste0('datasets/', season, '/nbastats'))), recursive = TRUE)
-  }
-  
+  exists_folder(path=paste0('datasets/', season))
+  exists_folder(path=paste0('datasets/', season, '/nbastats'))
   if (season >= 2000){
-    if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season, '/pbpstats'))))){
-      dir.create(suppressWarnings(normalizePath(paste0('datasets/', season, '/pbpstats'))), recursive = TRUE)
-    }
+    exists_folder(path=paste0('datasets/', season, '/pbpstats'))
   }
-  
   if (season >= 2016){
-    if (!dir.exists(suppressWarnings(normalizePath(paste0('datasets/', season, '/datanba'))))){
-      dir.create(suppressWarnings(normalizePath(paste0('datasets/', season, '/datanba'))), recursive = TRUE)
-    }
+    exists_folder(path=paste0('datasets/', season, '/datanba'))
   }
   
   early_st <- 0
