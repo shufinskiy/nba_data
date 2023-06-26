@@ -19,23 +19,22 @@ pbpstats_request_headers <- c(
 ### endpoints
 nba_params <- list(
   
+  leaguegamelog = list(
+    Counter = 0,
+    DateFrom = '',
+    DateTo = '',
+    Direction = 'ASC',
+    LeagueID = '00',
+    PlayerOrTeam = 'T',
+    Season = '',
+    SeasonType = I('Regular+Season'),
+    Sorter = 'DATE'
+  ),
+  
   playbyplayv2 = list(
     EndPeriod = 10,
     GameID = 0,
     StartPeriod = 1
-  ),
-  
-  boxscoretraditionalv2 = list(
-    EndPeriod = 10,
-    EndRange = 0,
-    GameID = 0,
-    RangeType = 0,
-    StartPeriod = 1,
-    StartRange = 0
-  ),
-
-  boxscoresummaryv2 = list(
-    GameID = 0
   ),
   
   shotchartdetail = list(

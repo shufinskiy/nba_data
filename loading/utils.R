@@ -143,7 +143,7 @@ trycatch_pbpstats <- function(url, season, t, pbpstats_request_headers, param_po
            })
 }
 
-get_nba_data <- function(GameID, season){
+get_nba_data <- function(GameID, season, gamelog, ...){
   GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
   url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", GameID, "_full_pbp.json")
   
@@ -160,18 +160,17 @@ get_nba_data <- function(GameID, season){
   return(data)
 }
 
-get_pbp_stats <- function(GameID, season, ...){
+get_pbp_stats <- function(GameID, season, gamelog, ...){
   
   ### Get game date
   if (season < 2000){
     message('Statistics on pbpstats.com start from 2000/01 season')
     return(NULL)
   }
-  game_summary <- get_boxscore_summary(GameID, season, headers = 'GameSummary')
-  game_date <- format(as.Date(game_summary$GAME_DATE_EST[1],format="%Y-%m-%d"))
-  team_id <- c(game_summary$HOME_TEAM_ID[1], game_summary$VISITOR_TEAM_ID[1])
-  start_period <- 1
-  end_period <- game_summary$LIVE_PERIOD[1]
+  
+  game_id <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
+  game_date <- unique(gamelog[gamelog$GAME_ID == game_id, "GAME_DATE"])
+  team_id <- gamelog[gamelog$GAME_ID == game_id, "TEAM_ID"]
   
   ### Get offense possessions teams
   count <- 1
@@ -191,7 +190,7 @@ get_pbp_stats <- function(GameID, season, ...){
   return(pbp_data)
 }
 
-get_nba_pbp <- function(GameID, season, player_on_floor = FALSE, ...){
+get_nba_pbp <- function(GameID, season, gamelog, ...){
   GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
   url <- 'https://stats.nba.com/stats/playbyplayv2?'
   
@@ -207,34 +206,23 @@ get_nba_pbp <- function(GameID, season, player_on_floor = FALSE, ...){
   }
   names(nba_data) <- json$resultSets$headers[[1]]
   
-  if (player_on_floor){
-    nba_data <- purrr::map_dfr(nba_data %>% group_split(), add_player_on_floor)
-  }
   return(nba_data)
 }
 
-get_boxscore_summary <- function(GameID, season, headers = c('all', "GameSummary", "OtherStats", "Officials", "InactivePlayers", "GameInfo", "LineScore", "LastMeeting", "SeasonSeries", "AvailableVideo")){
-  match.arg(headers)
-  GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
-  url <- 'https://stats.nba.com/stats/boxscoresummaryv2?'
+league_game_log <- function(season, ...){
+  url <- 'https://stats.nba.com/stats/leaguegamelog?'
   
   count <- 1
-  response <- requests_nba(url, count, 5, GameID = GameID)
+  response <- requests_nba(url, count, 5, Season = season, ...)
   json <- fromJSON(content(response, as = "text"))
-  if (headers == 'all'){
-    l <- lapply(seq_along(json$resultSets$name), function(x){
-      dt <-data.frame(matrix(unlist(json$resultSets$rowSet[[x]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))
-      colnames(dt) <- json$resultSets$headers[[x]]
-      return(dt)
-    })
-    names(l) <- json$resultSets$name
-    return(l)
-  } else {
-    n <- which(json$resultSets$name == headers)
-    df <- data.frame(matrix(unlist(json$resultSets$rowSet[[n]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))
-    colnames(df) <- json$resultSets$headers[[n]]
-    return(df)
+  
+  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
+  if(is.null(nba_data)){
+    return(NULL)
   }
+  names(nba_data) <- json$resultSets$headers[[1]]
+  
+  return(nba_data)
 }
 
 exists_folder <- function(path, recursive = TRUE){
@@ -256,6 +244,8 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
   
   early_st <- 0
   sleep <- 1
+  gamelog <- league_game_log(season = season)
+  
   for (i in seq(start, end)){
     
     exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
@@ -281,7 +271,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbo
           }
         }
         
-        dt <- do.call(n, list(GameID = i, season = season))
+        dt <- do.call(n, list(GameID = i, season = season, gamelog = gamelog))
         
         if(n == "get_nba_pbp"){
           if (is.null(dt)){
