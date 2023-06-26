@@ -13,6 +13,10 @@ Help()
    echo "       --season   season (start year) for play-by-play information"
    echo "   -s, --start    number of first game of season for play-by-play information"
    echo "   -e, --end      number of last game of season for play-by-play information"
+   echo "   -d, --datatype type of data received:"
+   echo "                     all - play-by-play and shotdetail data"
+   echo "                     pbp - Only play-by-play data"
+   echo "                     shot - Only shotdetails data"
    echo "       --stop     maximum number of consecutive numbers skipped before stopping"
    echo "   -h             print this help"
    echo "   -v, --verbose  verbose mode"
@@ -28,6 +32,8 @@ while [[ -n "$1" ]]; do
 		-e) end="$2"; shift;;
 		--end) end="$2"; shift;;
 		--stop) stop="$2"; shift;;
+		-d) datatype="$2"; shift;;
+		--datatype) datatype="$2"; shift;;
 		-v) verbose="$2"; shift;;
 		--verbose) verbose="$2"; shift;;
 		-h) Help; exit;;
@@ -37,7 +43,7 @@ while [[ -n "$1" ]]; do
 	shift
 done
 
-for VAR in nloop season start end stop verbose
+for VAR in nloop season start end stop datatype verbose
 do
 	if [ -v $VAR ]
 		then :
@@ -48,6 +54,7 @@ do
 				start) start=1;;
 				end) end=1230;;
 				stop) stop=5;;
+				datatype) datatype='all';;
 				verbose) verbose='FALSE'
 			esac
 	fi
@@ -56,7 +63,7 @@ done
 
 for ((i=0; i<$nloop; i++))
 do
-	./load_data.R --season $season --start $start --end $end --stop $stop --verbose $verbose
+	./load_data.R --season $season --start $start --end $end --stop $stop --datatype $datatype --verbose $verbose
 	sleep 120
 done
 

@@ -30,6 +30,15 @@ command_line_work <- function(func){
     end <- 1230
   }
   
+  if(any(args %in% c('-d', '--datatype'))){
+    datatype <- as.character(args[(which(args %in% c('-d', '--datatype')))+1])
+    if(is.na(datatype)){
+      datatype <- 'all'
+    }
+  } else {
+    datatype <- 'all'
+  }
+  
   if(any(args %in% c('--stop'))){
     early_stop <- as.numeric(args[(which(args %in% c('--stop')))+1])
     if(is.na(early_stop)){
@@ -48,7 +57,7 @@ command_line_work <- function(func){
     verbose <- 'FALSE'
   }
   
-  do.call(func, list(season, start, end, early_stop, verbose))
+  do.call(func, list(season, start, end, datatype, early_stop, verbose))
 }
 
 exists_folder <- function(path, recursive = TRUE){
@@ -277,78 +286,86 @@ get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
   }
 }
 
-get_season_pbp_full <- function(season, start=1, end=1230, early_stop = 5, verbose='FALSE'){
+get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', early_stop = 5, verbose='FALSE'){
   
-  exists_folder(path=paste0('datasets/', season))
-  exists_folder(path=paste0('datasets/', season, '/nbastats'))
-  exists_folder(path=paste0('datasets/', season, '/shotdetail'))
-  if (season >= 2000){
-    exists_folder(path=paste0('datasets/', season, '/pbpstats'))
+  if(datatype %in% c('all', 'pbp')){
+    exists_folder(path=paste0('datasets/', season))
+    exists_folder(path=paste0('datasets/', season, '/nbastats'))
+    if (season >= 2000){
+      exists_folder(path=paste0('datasets/', season, '/pbpstats'))
+    }
+    if (season >= 2016){
+      exists_folder(path=paste0('datasets/', season, '/datanba'))
+    }
   }
-  if (season >= 2016){
-    exists_folder(path=paste0('datasets/', season, '/datanba'))
+  if(datatype %in% c('all', 'shot')){
+    exists_folder(path=paste0('datasets/', season, '/shotdetail'))
   }
   
   early_st <- 0
   sleep <- 1
   
-  get_season_shot_details(season)
+  if(datatype %in% c('all', 'shot')){
+    get_season_shot_details(season)
+  }
   
-  gamelog <- league_game_log(season = season)
-  
-  for (i in seq(start, end)){
+  if(datatype %in% c('all', 'pbp')){
+    gamelog <- league_game_log(season = season)
     
-    exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
-    exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
-    exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
-    
-    if(sum(c(exists_nbastats, exists_pbpstats, exists_nbadata)) == 0){
-      next
-    } else {
-      if (sleep %% 100 == 0){
-        Sys.sleep(600)
-      }
+    for (i in seq(start, end)){
       
-      sleep <- sleep + 1
-      for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
-        if(season < 2000){
-          if(n %in% c("load_pbpstats")){
-            next
-          }
-        } else if(season < 2016){
-          if(n == "load_datanba"){
-            next
-          }
+      exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      
+      if(sum(c(exists_nbastats, exists_pbpstats, exists_nbadata)) == 0){
+        next
+      } else {
+        if (sleep %% 100 == 0){
+          Sys.sleep(600)
         }
         
-        dt <- do.call(n, list(GameID = i, season = season, gamelog = gamelog))
-        
-        if(n == "load_playbyplayv2"){
-          if (is.null(dt)){
-            early_st <- early_st + 1
-            if (early_st >= early_stop){
-              break
-            } else {
-              Sys.sleep(5)
+        sleep <- sleep + 1
+        for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
+          if(season < 2000){
+            if(n %in% c("load_pbpstats")){
+              next
+            }
+          } else if(season < 2016){
+            if(n == "load_datanba"){
               next
             }
           }
+          
+          dt <- do.call(n, list(GameID = i, season = season, gamelog = gamelog))
+          
+          if(n == "load_playbyplayv2"){
+            if (is.null(dt)){
+              early_st <- early_st + 1
+              if (early_st >= early_stop){
+                break
+              } else {
+                Sys.sleep(5)
+                next
+              }
+            }
+          }
+          early_st <- 0
+          folder <- switch(n,
+                           "load_playbyplayv2" = "nbastats",
+                           "load_pbpstats" = "pbpstats",
+                           "load_datanba" = "datanba")
+          
+          write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/', folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
+                    row.names = FALSE)
         }
-        early_st <- 0
-        folder <- switch(n,
-                         "load_playbyplayv2" = "nbastats",
-                         "load_pbpstats" = "pbpstats",
-                         "load_datanba" = "datanba")
-        
-        write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/', folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
-                  row.names = FALSE)
       }
+      
+      if (as.logical(verbose)){
+        print(paste('Файл',  paste0(paste(season, i, sep = '_'), '.csv'), 'сохранён в папке', normalizePath(paste('./datasets', season, sep = '/'))))
+      }
+      Sys.sleep(5)
     }
-    
-    if (as.logical(verbose)){
-      print(paste('Файл',  paste0(paste(season, i, sep = '_'), '.csv'), 'сохранён в папке', normalizePath(paste('./datasets', season, sep = '/'))))
-    }
-    Sys.sleep(5)
   }
 }
 
