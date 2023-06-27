@@ -39,6 +39,15 @@ command_line_work <- function(func){
     datatype <- 'all'
   }
   
+  if(any(args %in% c('-st', '--seasontype'))){
+    seasontype <- as.character(args[(which(args %in% c('-st', '--seasontype')))+1])
+    if(is.na(seasontype)){
+      seasontype <- 'rg'
+    }
+  } else {
+    seasontype <- 'rg'
+  }
+  
   if(any(args %in% c('--stop'))){
     early_stop <- as.numeric(args[(which(args %in% c('--stop')))+1])
     if(is.na(early_stop)){
@@ -57,7 +66,7 @@ command_line_work <- function(func){
     verbose <- 'FALSE'
   }
   
-  do.call(func, list(season, start, end, datatype, early_stop, verbose))
+  do.call(func, list(season, start, end, datatype, seasontype, early_stop, verbose))
 }
 
 exists_folder <- function(path, recursive = TRUE){
@@ -107,18 +116,18 @@ trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_r
 }
 
 ### GET function to pbpstats.com
-requests_pbpstats <- function(url, season, team_id, game_date, count, n_rep=5, ...){
+requests_pbpstats <- function(url, season, team_id, game_date, season_type, count, n_rep=5, ...){
   
   pbpstats_params <- list(
     TeamId = team_id,
     Season = paste(season, substr(season + 1, 3, 4), sep = '-'),
-    SeasonType = I('Regular%2BSeason'),
+    SeasonType = I(season_type),
     OffDef = 'Offense',
     StartType = 'All',
     FromDate = game_date,
     ToDate = game_date
   )
-  
+  print(pbpstats_params)
   res <- trycatch_pbpstats(url, season, 10, pbpstats_request_headers, pbpstats_params, team_id, game_date, count, n_rep, ...)
   return(res)
 }
@@ -174,9 +183,8 @@ league_game_log <- function(season, ...){
   return(nba_data)
 }
 
-load_datanba <- function(GameID, season, gamelog, ...){
-  GameID <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
-  url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", GameID, "_full_pbp.json")
+load_datanba <- function(game_id, season, gamelog, ...){
+  url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", game_id, "_full_pbp.json")
   
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
@@ -191,15 +199,14 @@ load_datanba <- function(GameID, season, gamelog, ...){
   return(data)
 }
 
-load_pbpstats <- function(GameID, season, gamelog, ...){
+load_pbpstats <- function(game_id, season, gamelog, ...){
   
   ### Get game date
   if (season < 2000){
     message('Statistics on pbpstats.com start from 2000/01 season')
     return(NULL)
   }
-  
-  game_id <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
+  season_type <- ifelse(substr(game_id, 1, 3) == '002', 'Regular%2BSeason', 'Playoffs')
   game_date <- unique(gamelog[gamelog$GAME_ID == game_id, "GAME_DATE"])
   team_id <- gamelog[gamelog$GAME_ID == game_id, "TEAM_ID"]
   
@@ -207,7 +214,7 @@ load_pbpstats <- function(GameID, season, gamelog, ...){
   count <- 1
   url <- 'https://api.pbpstats.com/get-possessions/nba'
   
-  response <- lapply(team_id, requests_pbpstats, url = url, season = season, game_date = game_date, count = count, n_rep = 5)
+  response <- lapply(team_id, requests_pbpstats, url = url, season = season, game_date = game_date, season_type = season_type, count = count, n_rep = 5)
   
   pbp_data <- bind_rows(lapply(response, function(x){
     json <- fromJSON(content(x, as = "text", encoding = 'UTF-8'))
@@ -221,14 +228,13 @@ load_pbpstats <- function(GameID, season, gamelog, ...){
   return(pbp_data)
 }
 
-load_playbyplayv2 <- function(GameID, season, gamelog, ...){
-  GameID <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
+load_playbyplayv2 <- function(game_id, season, gamelog, ...){
   url <- 'https://stats.nba.com/stats/playbyplayv2?'
   
   ## application request counter
   count <- 1
   
-  response <- requests_nba(url, count, 5, GameID = GameID, ...)
+  response <- requests_nba(url, count, 5, GameID = game_id, ...)
   json <- fromJSON(content(response, as = "text"))
   
   nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
@@ -254,7 +260,7 @@ load_shotchartdetail <- function(team_id, season, ...){
   return(nba_data)
 }
 
-get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
+get_season_shot_details <- function(season, seasontype, early_stop = 5, verbose = 'FALSE'){
   season <- as.integer(season)
   
   early_st <- 0
@@ -264,7 +270,7 @@ get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
       next
     }
     
-    t <- load_shotchartdetail(team_dict[[i]], season)
+    t <- load_shotchartdetail(team_dict[[i]], season, SeasonType = seasontype)
     if (sum(dim(t)) == 0){
       early_st <- early_st + 1
       if (early_st >= early_stop){
@@ -286,34 +292,46 @@ get_season_shot_details <- function(season, early_stop = 5, verbose = 'FALSE'){
   }
 }
 
-get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', early_stop = 5, verbose='FALSE'){
+get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5, verbose='FALSE'){
   
   if(datatype %in% c('all', 'pbp')){
-    exists_folder(path=paste0('datasets/', season))
-    exists_folder(path=paste0('datasets/', season, '/nbastats'))
+    exists_folder(path=paste('datasets', season, seasontype, sep = '/'))
+    exists_folder(path=paste('datasets', season, seasontype, 'nbastats', sep = '/'))
     if (season >= 2000){
-      exists_folder(path=paste0('datasets/', season, '/pbpstats'))
+      exists_folder(path=paste('datasets', season, seasontype, 'pbpstats', sep = '/'))
     }
     if (season >= 2016){
-      exists_folder(path=paste0('datasets/', season, '/datanba'))
+      exists_folder(path=paste('datasets', season, seasontype, 'datanba', sep ='/'))
     }
   }
   if(datatype %in% c('all', 'shot')){
-    exists_folder(path=paste0('datasets/', season, '/shotdetail'))
+    exists_folder(path=paste('datasets', season, 'shotdetail', sep = '/'))
   }
+  
+  seasontype <- switch (seasontype,
+                        'rg' = I('Regular+Season'),
+                        'po' = 'Playoffs'
+  )
   
   early_st <- 0
   sleep <- 1
-  
+
   if(datatype %in% c('all', 'shot')){
-    get_season_shot_details(season)
+    get_season_shot_details(season, seasontype)
   }
   
   if(datatype %in% c('all', 'pbp')){
-    gamelog <- league_game_log(season = season)
+    gamelog <- league_game_log(season = season, SeasonType = seasontype)
+    if(seasontype == 'Playoffs'){
+      games_id <- unique(gamelog$GAME_ID)
+    } else {
+      start <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(start)), collapse = ''), start)))
+      end <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(end)), collapse = ''), end)))
+      games_id <- sapply(seq(start, end), function(x) paste0('002', x))
+    }
     
-    for (i in seq(start, end)){
-      
+    for (i in games_id){
+      print(i)
       exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
@@ -337,7 +355,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', ear
             }
           }
           
-          dt <- do.call(n, list(GameID = i, season = season, gamelog = gamelog))
+          dt <- do.call(n, list(game_id = i, season = season, gamelog = gamelog))
           
           if(n == "load_playbyplayv2"){
             if (is.null(dt)){
@@ -351,12 +369,16 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', ear
             }
           }
           early_st <- 0
-          folder <- switch(n,
-                           "load_playbyplayv2" = "nbastats",
-                           "load_pbpstats" = "pbpstats",
-                           "load_datanba" = "datanba")
-          
-          write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/', folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
+          pbp_folder <- switch(n,
+                               "load_playbyplayv2" = "nbastats",
+                               "load_pbpstats" = "pbpstats",
+                               "load_datanba" = "datanba")
+          type_folder <- switch (seasontype,
+                                 'Regular+Season' = 'rg',
+                                 'Playoffs' = 'po')
+
+          write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, type_folder, 
+                                                                    pbp_folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
                     row.names = FALSE)
         }
       }
@@ -366,50 +388,5 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', ear
       }
       Sys.sleep(5)
     }
-  }
-}
-
-## Functions from experiment_dff_shot
-### Functions for work with CLI
-processing_args_command_line <- function(args, need_arg, default_value, as_func = "as.numeric"){
-  if(any(args %in% need_arg)){
-    arg <- do.call(as_func, list(args[which(args %in% need_arg)+1]))
-    
-    if(is.na(arg)){
-      arg <- default_value
-    }
-  } else {
-    arg <- default_value
-  }
-  return(arg)
-}
-
-# command_line_work <- function(){
-#   args <- commandArgs(trailingOnly = TRUE)
-#   
-#   season <- processing_args_command_line(args, "--season", 2020)
-#   start <- processing_args_command_line(args, c('-s', '--start'), 1)
-#   end <- processing_args_command_line(args, c('-e', '--end'), 1230)
-#   early_stop <- processing_args_command_line(args, '--stop', 5)
-#   verbose <- processing_args_command_line(args, c('-v', '--verbose'), "FALSE", "as.character")
-#   datatype <- processing_args_command_line(args, "-d", "pbp", "as.character")
-#   player_id <- processing_args_command_line(args, c("-p1", "--player_id"), NA)
-#   partner_id <- processing_args_command_line(args, c("-p2", "--partner_id"), NA)
-#   
-#   return(list(season, start, end, early_stop, verbose, datatype, player_id, partner_id))  
-# }
-
-loading_nba_data <- function(){
-  
-  args <- command_line_work()
-  
-  if(args[[6]] == 'pbp'){
-    do.call("get_season_pbp_full", list(args[[1]], args[[2]], args[[3]], args[[4]], args[[5]]))
-  } else  if(args[[6]] == "shot"){
-    do.call("get_season_shot_details", list(args[[1]], args[[4]], args[[5]]))
-  } else if(args[[6]] == "players") {
-    do.call("get_commonal_players", list(args[[1]], args[[5]]))
-  } else {
-    stop("Введён неверный аргумент datatype")
   }
 }
