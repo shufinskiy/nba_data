@@ -17,6 +17,9 @@ Help()
    echo "                     all - play-by-play and shotdetail data"
    echo "                     pbp - Only play-by-play data"
    echo "                     shot - Only shotdetails data"
+   echo "   -st, --seasontype type of season:"
+   echo "                     rg - Regular Season"
+   echo "                     po - Playoffs"
    echo "       --stop     maximum number of consecutive numbers skipped before stopping"
    echo "   -h             print this help"
    echo "   -v, --verbose  verbose mode"
@@ -34,6 +37,8 @@ while [[ -n "$1" ]]; do
 		--stop) stop="$2"; shift;;
 		-d) datatype="$2"; shift;;
 		--datatype) datatype="$2"; shift;;
+		-st) seasontype="$2"; shift;;
+    --seasontype) seasontype="$2"; shift;;
 		-v) verbose="$2"; shift;;
 		--verbose) verbose="$2"; shift;;
 		-h) Help; exit;;
@@ -43,7 +48,7 @@ while [[ -n "$1" ]]; do
 	shift
 done
 
-for VAR in nloop season start end stop datatype verbose
+for VAR in nloop season start end stop datatype seasontype verbose
 do
 	if [ -v $VAR ]
 		then :
@@ -55,6 +60,7 @@ do
 				end) end=1230;;
 				stop) stop=5;;
 				datatype) datatype='all';;
+				seasontype) seasontype='rg';;
 				verbose) verbose='FALSE'
 			esac
 	fi
@@ -63,8 +69,8 @@ done
 
 for ((i=0; i<$nloop; i++))
 do
-	./load_data.R --season $season --start $start --end $end --stop $stop --datatype $datatype --verbose $verbose
-	sleep 120
+	./load_data.R --season $season --start $start --end $end --stop $stop --datatype $datatype --seasontype $seasontype --verbose $verbose
+	# sleep 120
 done
 
 # ## bash from experiment_dff_shot
