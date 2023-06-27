@@ -299,7 +299,7 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verb
   }
 }
 
-get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5, verbose='FALSE'){
+load_season_pbp <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5, verbose='FALSE'){
   
   if(datatype %in% c('all', 'pbp')){
     exists_folder(path=paste('datasets', season, seasontype, sep = '/'))
@@ -314,22 +314,21 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
   if(datatype %in% c('all', 'shot')){
     exists_folder(path=paste('datasets', season, seasontype, 'shotdetail', sep = '/'))
   }
-  
-  seasontype <- switch (seasontype,
-                        'rg' = I('Regular+Season'),
-                        'po' = 'Playoffs'
+  request_seasontype <- switch (seasontype,
+                                'rg' = I('Regular+Season'),
+                                'po' = 'Playoffs'
   )
   
   if(datatype %in% c('all', 'shot')){
-    load_season_shotchartdetail(season, seasontype)
+    load_season_shotchartdetail(season, request_seasontype)
   }
   
   early_st <- 0
   sleep <- 1
 
   if(datatype %in% c('all', 'pbp')){
-    gamelog <- league_game_log(season = season, SeasonType = seasontype)
-    if(seasontype == 'Playoffs'){
+    gamelog <- league_game_log(season = season, SeasonType = request_seasontype)
+    if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
     } else {
       start <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(start)), collapse = ''), start)))
@@ -339,9 +338,9 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
     
     for (i in games_id){
 
-      exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
-      exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
-      exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       
       if(sum(c(exists_nbastats, exists_pbpstats, exists_nbadata)) == 0){
         next
@@ -380,11 +379,8 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
                                "load_playbyplayv2" = "nbastats",
                                "load_pbpstats" = "pbpstats",
                                "load_datanba" = "datanba")
-          type_folder <- switch (seasontype,
-                                 'Regular+Season' = 'rg',
-                                 'Playoffs' = 'po')
 
-          write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets',  season, type_folder, 
+          write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 
                                                                     pbp_folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
                     row.names = FALSE)
         }

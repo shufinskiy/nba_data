@@ -8,4 +8,4 @@ library(tidyr, warn.conflicts = FALSE)
 source('helpers.R')
 source('utils.R')
 
-command_line_work(get_season_pbp_full)
+command_line_work(load_season_pbp)
