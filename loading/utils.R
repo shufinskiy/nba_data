@@ -127,7 +127,7 @@ requests_pbpstats <- function(url, season, team_id, game_date, season_type, coun
     FromDate = game_date,
     ToDate = game_date
   )
-  print(pbpstats_params)
+
   res <- trycatch_pbpstats(url, season, 10, pbpstats_request_headers, pbpstats_params, team_id, game_date, count, n_rep, ...)
   return(res)
 }
