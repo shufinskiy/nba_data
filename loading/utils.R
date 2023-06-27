@@ -255,22 +255,29 @@ load_shotchartdetail <- function(team_id, season, ...){
   json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   raw_data <- json$resultSets$rowSet[[1]]
   col_names <- json$resultSets$headers[[1]]
-  nba_data <- data.frame(matrix(unlist(raw_data), ncol = length(col_names), byrow = FALSE))
+  nba_data <- tryCatch({data.frame(matrix(unlist(raw_data), ncol = length(col_names), byrow = FALSE))}, error = function(e) return(0))
+  if(!is.data.frame(nba_data)){
+    return(0)
+  }
   tryCatch({names(nba_data) <- col_names}, error = function(e) return(nba_data))
   return(nba_data)
 }
 
 load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verbose = 'FALSE'){
   season <- as.integer(season)
+  season_type <- ifelse(seasontype == 'Playoffs', 'po', 'rg')
   
   early_st <- 0
   for (i in seq_along(team_dict)){
     
-    if (file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))))){
+    if (file.exists(suppressWarnings(normalizePath(paste('./datasets', season, season_type, 'shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))))){
       next
     }
     
     t <- load_shotchartdetail(team_dict[[i]], season, SeasonType = seasontype)
+    if(is.numeric(t)){
+      next
+    }
     if (sum(dim(t)) == 0){
       early_st <- early_st + 1
       if (early_st >= early_stop){
@@ -282,7 +289,7 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verb
     }
     early_st <- 0
     
-    write.csv(t, file = suppressWarnings(normalizePath(paste('./datasets',  season, '/shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))),
+    write.csv(t, file = suppressWarnings(normalizePath(paste('./datasets',  season, season_type, 'shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))),
               row.names = FALSE)
     if (as.logical(verbose)){
       print(paste('Shot details сезона', stringr::str_c(season, stringr::str_sub(season + 1, 3, 4), sep='-'), names(team_dict[i]), 
@@ -305,7 +312,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
     }
   }
   if(datatype %in% c('all', 'shot')){
-    exists_folder(path=paste('datasets', season, 'shotdetail', sep = '/'))
+    exists_folder(path=paste('datasets', season, seasontype, 'shotdetail', sep = '/'))
   }
   
   seasontype <- switch (seasontype,
@@ -313,13 +320,13 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
                         'po' = 'Playoffs'
   )
   
-  early_st <- 0
-  sleep <- 1
-
   if(datatype %in% c('all', 'shot')){
     load_season_shotchartdetail(season, seasontype)
   }
   
+  early_st <- 0
+  sleep <- 1
+
   if(datatype %in% c('all', 'pbp')){
     gamelog <- league_game_log(season = season, SeasonType = seasontype)
     if(seasontype == 'Playoffs'){
@@ -331,7 +338,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
     }
     
     for (i in games_id){
-      print(i)
+
       exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, '/datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))

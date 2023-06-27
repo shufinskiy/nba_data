@@ -70,5 +70,5 @@ done
 for ((i=0; i<$nloop; i++))
 do
 	./load_data.R --season $season --start $start --end $end --stop $stop --datatype $datatype --seasontype $seasontype --verbose $verbose
-	# sleep 120
+	sleep 120
 done

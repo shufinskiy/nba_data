@@ -94,7 +94,6 @@ nba_params <- list(
     VsPlayerID5 = '',
     VsTeamID = ''
   )
-  
 )
 
 ### list Team ID
