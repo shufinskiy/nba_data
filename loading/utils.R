@@ -68,7 +68,7 @@ exists_folder <- function(path, recursive = TRUE){
 
 ### Get endpoints name
 re_type_stats <- function(url){
-  return(str_extract(url, '(?<=\\/)[:alnum:]+(?=\\?)'))
+  return(regmatches(url, regexpr('(?<=\\/)[[:alnum:]]+(?=\\?)', url, perl = TRUE)))
 }
 
 ### get endpoints
@@ -109,9 +109,9 @@ trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_r
 ### GET function to pbpstats.com
 requests_pbpstats <- function(url, season, team_id, game_date, count, n_rep=5, ...){
   
-  param_poss <- list(
+  pbpstats_params <- list(
     TeamId = team_id,
-    Season = paste0(season, '-', str_pad(as.numeric(str_sub(season, 3, 4)) + 1, 2, pad = "0")),
+    Season = paste(season, substr(season + 1, 3, 4), sep = '-'),
     SeasonType = I('Regular%2BSeason'),
     OffDef = 'Offense',
     StartType = 'All',
@@ -119,7 +119,7 @@ requests_pbpstats <- function(url, season, team_id, game_date, count, n_rep=5, .
     ToDate = game_date
   )
   
-  res <- trycatch_pbpstats(url, season, 10, pbpstats_request_headers, param_poss, team_id, game_date, count, n_rep, ...)
+  res <- trycatch_pbpstats(url, season, 10, pbpstats_request_headers, pbpstats_params, team_id, game_date, count, n_rep, ...)
   return(res)
 }
 
@@ -175,7 +175,7 @@ league_game_log <- function(season, ...){
 }
 
 load_datanba <- function(GameID, season, gamelog, ...){
-  GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
+  GameID <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
   url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", GameID, "_full_pbp.json")
   
   count <- 1
@@ -199,7 +199,7 @@ load_pbpstats <- function(GameID, season, gamelog, ...){
     return(NULL)
   }
   
-  game_id <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
+  game_id <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
   game_date <- unique(gamelog[gamelog$GAME_ID == game_id, "GAME_DATE"])
   team_id <- gamelog[gamelog$GAME_ID == game_id, "TEAM_ID"]
   
@@ -222,7 +222,7 @@ load_pbpstats <- function(GameID, season, gamelog, ...){
 }
 
 load_playbyplayv2 <- function(GameID, season, gamelog, ...){
-  GameID <- paste0(paste0('002', str_sub(season, 3, 4), '0'), str_pad(GameID, 4, side = "left", pad = 0))
+  GameID <- paste0(paste0('002', substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(GameID)), collapse = ''), GameID))
   url <- 'https://stats.nba.com/stats/playbyplayv2?'
   
   ## application request counter
@@ -242,7 +242,7 @@ load_playbyplayv2 <- function(GameID, season, gamelog, ...){
 
 load_shotchartdetail <- function(team_id, season, ...){
   url <- 'https://stats.nba.com/stats/shotchartdetail?'
-  season <- str_c(season, str_sub(season + 1, 3, 4), sep='-')
+  season <- paste(season, substr(season + 1, 3, 4), sep = '-')
   
   count <- 1
   response <- requests_nba(url, count, 5, TeamID = as.character(team_id), Season = season, ...)
