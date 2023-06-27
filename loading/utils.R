@@ -260,7 +260,7 @@ load_shotchartdetail <- function(team_id, season, ...){
   return(nba_data)
 }
 
-get_season_shot_details <- function(season, seasontype, early_stop = 5, verbose = 'FALSE'){
+load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verbose = 'FALSE'){
   season <- as.integer(season)
   
   early_st <- 0
@@ -317,7 +317,7 @@ get_season_pbp_full <- function(season, start=1, end=1230, datatype = 'all', sea
   sleep <- 1
 
   if(datatype %in% c('all', 'shot')){
-    get_season_shot_details(season, seasontype)
+    load_season_shotchartdetail(season, seasontype)
   }
   
   if(datatype %in% c('all', 'pbp')){
