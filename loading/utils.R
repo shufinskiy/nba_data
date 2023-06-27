@@ -57,16 +57,7 @@ command_line_work <- function(func){
     early_stop <- 5
   }
   
-  if(any(args %in% c('-v', '--verbose'))){
-    verbose <- as.character(args[(which(args %in% c('-v', '--verbose')))+1])
-    if(is.na(verbose)){
-      verbose <- 'FALSE'
-    }
-  } else {
-    verbose <- 'FALSE'
-  }
-  
-  do.call(func, list(season, start, end, datatype, seasontype, early_stop, verbose))
+  do.call(func, list(season, start, end, datatype, seasontype, early_stop))
 }
 
 exists_folder <- function(path, recursive = TRUE){
@@ -263,7 +254,7 @@ load_shotchartdetail <- function(team_id, season, ...){
   return(nba_data)
 }
 
-load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verbose = 'FALSE'){
+load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
   season <- as.integer(season)
   season_type <- ifelse(seasontype == 'Playoffs', 'po', 'rg')
   
@@ -291,10 +282,6 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5, verb
     
     write.csv(t, file = suppressWarnings(normalizePath(paste('./datasets',  season, season_type, 'shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))),
               row.names = FALSE)
-    if (as.logical(verbose)){
-      print(paste('Shot details сезона', stringr::str_c(season, stringr::str_sub(season + 1, 3, 4), sep='-'), names(team_dict[i]), 
-                  'сохранены в папке', normalizePath(paste('./datasets', season, '/shotdetail', sep = '/'))))
-    }
     Sys.sleep(5)
   }
 }
@@ -386,9 +373,6 @@ load_season_pbp <- function(season, start=1, end=1230, datatype = 'all', seasont
         }
       }
       
-      if (as.logical(verbose)){
-        print(paste('Файл',  paste0(paste(season, i, sep = '_'), '.csv'), 'сохранён в папке', normalizePath(paste('./datasets', season, sep = '/'))))
-      }
       Sys.sleep(5)
     }
   }
