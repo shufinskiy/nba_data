@@ -1,3 +1,5 @@
+`%>%` <- magrittr::`%>%`
+
 ## Functions from advanced_nba_data
 command_line_work <- function(func){
   args <- commandArgs(trailingOnly = TRUE)
@@ -81,14 +83,13 @@ requests_nba <- function(url, count, n_rep, ...){
   argg <- c(as.list(environment()), list(...))
   param_nba <- get_endpoints(url)
   param_nba[intersect(names(argg), names(param_nba))] <- argg[intersect(names(argg), names(param_nba))]
-  
   res <- trycatch_nbastats(url, 10, nba_request_headers, param_nba, count, n_rep, ...)
   return(res)
 }
 
 trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_rep, ...){
-  
-  tryCatch({res <- GET(url = url, timeout(t), add_headers(nba_request_headers), query = param_nba)
+
+  tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(nba_request_headers), query = param_nba)
   if(res$status_code != 200 | res$url == 'https://www.nba.com/stats/error/') {stop()}; return(res)},
   error = function(e){
     if (exists('res')){
@@ -126,7 +127,7 @@ requests_pbpstats <- function(url, season, team_id, game_date, season_type, coun
 ### GET function to data.nba.com
 trycatch_datanba <- function(url, t, nba_request_headers, count, n_rep){
   
-  tryCatch({res <- GET(url = url, timeout(t), add_headers(nba_request_headers))
+  tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(nba_request_headers))
   if(res$status_code != 200) {stop()}; return(res)},
   error = function(e){
     if (exists('res')){
@@ -146,7 +147,8 @@ trycatch_datanba <- function(url, t, nba_request_headers, count, n_rep){
 
 trycatch_pbpstats <- function(url, season, t, pbpstats_request_headers, param_poss, team_id, game_date, count, n_rep, ...){
   
-  tryCatch({res <- GET(url = url, timeout(t), add_headers(pbpstats_request_headers), query = param_poss, config = config(ssl_verifypeer = FALSE)); res},
+  tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(pbpstats_request_headers), query = param_poss, 
+                             config = httr::config(ssl_verifypeer = FALSE)); res},
            error = function(e){
              if (count < n_rep){
                message(paste0(Sys.time(), ' No response was received from pbpstats, a repeat request. Number of remaining attempts: ', n_rep - count))
@@ -163,9 +165,11 @@ league_game_log <- function(season, ...){
   
   count <- 1
   response <- requests_nba(url, count, 5, Season = season, ...)
-  json <- fromJSON(content(response, as = "text"))
+  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   
-  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
+  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), 
+                                          ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, 
+                       error = function(e) return(NULL))
   if(is.null(nba_data)){
     return(NULL)
   }
@@ -179,13 +183,13 @@ load_datanba <- function(game_id, season, gamelog, ...){
   
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
-  json <- fromJSON(content(response, as = "text", encoding = 'UTF-8'))
+  json <- jsonlite::fromJSON(httr::content(response, as = "text", encoding = 'UTF-8'))
   
   game_id <- json$g$gid
   period <- json$g$pd$p
   
-  data <- bind_rows(lapply(period, function(period){mutate(json$g$pd$pla[[period]], PERIOD = period)}))
-  data <- mutate(data, GAME_ID = game_id)
+  data <- dplyr::bind_rows(lapply(period, function(period){dplyr::mutate(json$g$pd$pla[[period]], PERIOD = period)}))
+  data <- dplyr::mutate(data, GAME_ID = game_id)
   
   return(data)
 }
@@ -207,13 +211,13 @@ load_pbpstats <- function(game_id, season, gamelog, ...){
   
   response <- lapply(team_id, requests_pbpstats, url = url, season = season, game_date = game_date, season_type = season_type, count = count, n_rep = 5)
   
-  pbp_data <- bind_rows(lapply(response, function(x){
-    json <- fromJSON(content(x, as = "text", encoding = 'UTF-8'))
+  pbp_data <- dplyr::bind_rows(lapply(response, function(x){
+    json <- jsonlite::fromJSON(httr::content(x, as = "text", encoding = 'UTF-8'))
     pbp_data <- json[['possessions']]
     
     pbp_data <- pbp_data %>%
-      unnest(., VideoUrls, keep_empty = TRUE) %>%
-      rename_all(toupper)
+      tidyr::unnest(., VideoUrls, keep_empty = TRUE) %>%
+      dplyr::rename_all(toupper)
   }))
   
   return(pbp_data)
@@ -226,9 +230,11 @@ load_playbyplayv2 <- function(game_id, season, gamelog, ...){
   count <- 1
   
   response <- requests_nba(url, count, 5, GameID = game_id, ...)
-  json <- fromJSON(content(response, as = "text"))
+  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   
-  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, error = function(e) return(NULL))
+  nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), 
+                                          ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, 
+                       error = function(e) return(NULL))
   if(is.null(nba_data)){
     return(NULL)
   }
@@ -246,7 +252,9 @@ load_shotchartdetail <- function(team_id, season, ...){
   json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   raw_data <- json$resultSets$rowSet[[1]]
   col_names <- json$resultSets$headers[[1]]
-  nba_data <- tryCatch({data.frame(matrix(unlist(raw_data), ncol = length(col_names), byrow = FALSE))}, error = function(e) return(0))
+  nba_data <- tryCatch({data.frame(matrix(unlist(raw_data), 
+                                          ncol = length(col_names), byrow = FALSE))}, 
+                       error = function(e) return(0))
   if(!is.data.frame(nba_data)){
     return(0)
   }
@@ -260,7 +268,7 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
   
   early_st <- 0
   for (i in seq_along(team_dict)){
-    
+
     if (file.exists(suppressWarnings(normalizePath(paste('./datasets', season, season_type, 'shotdetail', paste0(names(team_dict[i]), '.csv'), sep = '/'))))){
       next
     }
@@ -301,9 +309,9 @@ load_season_pbp <- function(season, start=1, end=1230, datatype = 'all', seasont
   if(datatype %in% c('all', 'shot')){
     exists_folder(path=paste('datasets', season, seasontype, 'shotdetail', sep = '/'))
   }
-  request_seasontype <- switch (seasontype,
-                                'rg' = I('Regular+Season'),
-                                'po' = 'Playoffs'
+  request_seasontype <- switch(seasontype,
+                               'rg' = I('Regular+Season'),
+                               'po' = 'Playoffs'
   )
   
   if(datatype %in% c('all', 'shot')){
@@ -372,7 +380,6 @@ load_season_pbp <- function(season, start=1, end=1230, datatype = 'all', seasont
                     row.names = FALSE)
         }
       }
-      
       Sys.sleep(5)
     }
   }

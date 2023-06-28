@@ -1,10 +1,5 @@
 #! /opt/R/4.0.2/bin/Rscript --vanilla
 
-library(httr, warn.conflicts = FALSE)
-library(jsonlite, warn.conflicts = FALSE)
-library(dplyr, warn.conflicts = FALSE)
-library(tidyr, warn.conflicts = FALSE)
-
 source('helpers.R')
 source('utils.R')
 
