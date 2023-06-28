@@ -3,4 +3,4 @@
 source('helpers.R')
 source('utils.R')
 
-command_line_work(load_season_pbp)
+command_line_work(load_season)

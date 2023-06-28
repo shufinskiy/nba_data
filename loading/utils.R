@@ -1,6 +1,15 @@
 `%>%` <- magrittr::`%>%`
 
-## Functions from advanced_nba_data
+#' Call function with argument from CLI
+#' 
+#' @description
+#' Call function with argument from CLI
+#' 
+#' @details
+#' later
+#' 
+#' @param func function function which need call with argument from CLI
+#' @return None
 command_line_work <- function(func){
   args <- commandArgs(trailingOnly = TRUE)
   
@@ -62,23 +71,68 @@ command_line_work <- function(func){
   do.call(func, list(season, start, end, datatype, seasontype, early_stop))
 }
 
+
+#' Checking existence of a folder
+#' 
+#' @description
+#' Checking existence of a folder
+#' 
+#' @details
+#' Checking existence of a folder. If not, then create
+#' 
+#' @param path character path to folder
+#' @param recursive logical. Should elements of the path other than the last be created? If true, like the Unix command mkdir -p.
+#' @return None
 exists_folder <- function(path, recursive = TRUE){
   if (!dir.exists(suppressWarnings(normalizePath(path)))){
     dir.create(suppressWarnings(normalizePath(path)), recursive = TRUE)
   }
 }
 
-### Get endpoints name
+
+#' Get NBA endpoint name from URL
+#'
+#' @description
+#' Get NBA endpoint name from URL
+#' 
+#' @details
+#' later
+#' 
+#' @param url character URL NBA endpoint
+#' @return character NBA endpoint name
 re_type_stats <- function(url){
   return(regmatches(url, regexpr('(?<=\\/)[[:alnum:]]+(?=\\?)', url, perl = TRUE)))
 }
 
-### get endpoints
+
+#' Get list parameters for NBA endpoint
+#'
+#' @description
+#' Get list parameters for NBA endpoint
+#' 
+#' @details
+#' later
+#' 
+#' @param url character URL NBA endpoint
+#' @return description
 get_endpoints <- function(url){
   return(nba_params[[re_type_stats(url)]])
 }
 
-### GET function to nbastats.com
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return response from NBA API
 requests_nba <- function(url, count, n_rep, ...){
   argg <- c(as.list(environment()), list(...))
   param_nba <- get_endpoints(url)
@@ -87,6 +141,23 @@ requests_nba <- function(url, count, n_rep, ...){
   return(res)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return response from NBA API
 trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_rep, ...){
 
   tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(nba_request_headers), query = param_nba)
@@ -107,7 +178,24 @@ trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_r
   })
 }
 
-### GET function to pbpstats.com
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return response from NBA API
 requests_pbpstats <- function(url, season, team_id, game_date, season_type, count, n_rep=5, ...){
   
   pbpstats_params <- list(
@@ -124,7 +212,21 @@ requests_pbpstats <- function(url, season, team_id, game_date, season_type, coun
   return(res)
 }
 
-### GET function to data.nba.com
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @return response from NBA API
 trycatch_datanba <- function(url, t, nba_request_headers, count, n_rep){
   
   tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(nba_request_headers))
@@ -145,6 +247,26 @@ trycatch_datanba <- function(url, t, nba_request_headers, count, n_rep){
   })
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return response from NBA API
 trycatch_pbpstats <- function(url, season, t, pbpstats_request_headers, param_poss, team_id, game_date, count, n_rep, ...){
   
   tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(pbpstats_request_headers), query = param_poss, 
@@ -160,6 +282,18 @@ trycatch_pbpstats <- function(url, season, t, pbpstats_request_headers, param_po
            })
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A leaguegamelog data.frame
 league_game_log <- function(season, ...){
   url <- 'https://stats.nba.com/stats/leaguegamelog?'
   
@@ -178,6 +312,20 @@ league_game_log <- function(season, ...){
   return(nba_data)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A play-by-play data.frame from data.stats.com
 load_datanba <- function(game_id, season, gamelog, ...){
   url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", game_id, "_full_pbp.json")
   
@@ -194,6 +342,20 @@ load_datanba <- function(game_id, season, gamelog, ...){
   return(data)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A play-by-play data.frame from pbpstats.com
 load_pbpstats <- function(game_id, season, gamelog, ...){
   
   ### Get game date
@@ -223,6 +385,20 @@ load_pbpstats <- function(game_id, season, gamelog, ...){
   return(pbp_data)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A play-by-play data.frame from nba.stats.com
 load_playbyplayv2 <- function(game_id, season, gamelog, ...){
   url <- 'https://stats.nba.com/stats/playbyplayv2?'
   
@@ -243,6 +419,19 @@ load_playbyplayv2 <- function(game_id, season, gamelog, ...){
   return(nba_data)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A shotdetail data.frame
 load_shotchartdetail <- function(team_id, season, ...){
   url <- 'https://stats.nba.com/stats/shotchartdetail?'
   season <- paste(season, substr(season + 1, 3, 4), sep = '-')
@@ -262,6 +451,19 @@ load_shotchartdetail <- function(team_id, season, ...){
   return(nba_data)
 }
 
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @return None
 load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
   season <- as.integer(season)
   season_type <- ifelse(seasontype == 'Playoffs', 'po', 'rg')
@@ -294,7 +496,23 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
   }
 }
 
-load_season_pbp <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5, verbose='FALSE'){
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param name description
+#' @return None
+load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5){
   
   if(datatype %in% c('all', 'pbp')){
     exists_folder(path=paste('datasets', season, seasontype, sep = '/'))

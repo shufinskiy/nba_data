@@ -1,9 +1,8 @@
-## bash from advanced_nba-data
 #! /usr/bin/env bash
 
 Help()
 {
-   echo "Get full play-by-play data from sites nbastats.com and pbpstats.com"
+   echo "Get play-by-play and shotdetail data from sites nbastats.com, pbpstats.com and data.nba.com"
    echo
    echo "usage    : ./run_script [option] ..."
    echo "example  : ./run_script -n 5 --season 2019 -s 2 -e 34"
