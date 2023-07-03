@@ -550,7 +550,6 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
     }
     
     for (i in games_id){
-
       exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
@@ -564,12 +563,13 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
         
         sleep <- sleep + 1
         for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
-          if(season < 2000){
+          if(season < 2016){
             if(n %in% c("load_pbpstats")){
               next
             }
-          } else if(season < 2016){
-            if(n == "load_datanba"){
+          }
+          if(season < 2000){
+            if(n %in% c("load_datanba", "load_pbpstats")){
               next
             }
           }
