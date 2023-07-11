@@ -1,14 +1,23 @@
-import urllib.request
-import tarfile
-from pathlib import Path
-from itertools import product
-
-def get_nba_data(seasons=range(1996, 2022), 
+def get_nba_data(seasons=range(1996, 2023), 
                  data=("datanba", "nbastats", "pbpstats", "shotdetail"),
+                 seasontype='rg',
                  untar=False):
     if isinstance(seasons, int):
         seasons = (seasons,)
-    need_data = tuple(["_".join([data, str(season)]) for (data, season) in product(data, seasons)])
+    if isinstance(data, str):
+        data = (data,)
+        
+    if seasontype == 'rg':
+        need_data = tuple(["_".join([data, str(season)]) for (data, season) in product(data, seasons)])
+    elif seasontype == 'po':
+        need_data = tuple(["_".join([data, seasontype, str(season)]) \
+                           for (data, seasontype, season) in product(data, (seasontype, ), seasons)])
+    else:
+        need_data_rg = tuple(["_".join([data, str(season)]) for (data, season) in product(data, seasons)])
+        need_data_po = tuple(["_".join([data, seasontype, str(season)]) \
+                              for (data, seasontype, season) in product(data, ('po', ), seasons)])
+        need_data = need_data_rg + need_data_po
+
     with urllib.request.urlopen("https://raw.githubusercontent.com/shufinskiy/nba_data/main/list_data.txt") as f:
         v = f.read().decode('utf-8').strip()
     
