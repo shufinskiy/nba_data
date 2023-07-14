@@ -1,4 +1,4 @@
-### Dataset NBA Regular season play-by-play data and shotdetails from 1996/1997 to 2022/23
+### Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2022/23
 
 ## Description
 Dataset contains play-by-play data from three sources: **stats.nba.com**, **data.nba.com** and **pbpstats.com** and also **shots details**.
@@ -7,8 +7,6 @@ Dataset contains data from season 1996/97 for stats.nba.com and shotdetails, fro
 Play-by-play data collected with help functions from [advanced_pbp_data](https://github.com/shufinskiy/advanced_pbp_data) repository.
 
 Detailed description data can be read in file [description_fields.md](https://github.com/shufinskiy/nba_data/blob/main/description_fields.md).
-
-**Note: dataset contains only Regular Season data, without play-off**
 
 ### Useful links:
 Ryan Davis - [Analyze the Play by Play Data](https://github.com/rd11490/NBA_Tutorials/tree/master/analyze_play_by_play)
