@@ -129,7 +129,7 @@ Kaggle [notebook](https://www.kaggle.com/code/brains14482/nba-play-by-play-datas
 
 **Download from Google Drive (without season 2022/23)**
 
-You can also download full version of the dataset from [GoogleDrive](https://drive.google.com/file/d/1SqLZC_OlWkJyv4sJV3N8IpFZMTv9zvef/view?usp=sharing).
+You can also download full version of the dataset from [GoogleDrive](https://drive.google.com/file/d/1pBBY7JiVLVMmMz_tV5KkTgUhrpulUQtD/view?usp=sharing).
 
 #### Contact me:
 
