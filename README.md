@@ -4,7 +4,7 @@
 Dataset contains play-by-play data from three sources: **stats.nba.com**, **data.nba.com** and **pbpstats.com** and also **shots details**.
 Dataset contains data from season 1996/97 for stats.nba.com and shotdetails, from season 2000/01 for pbpstats.com and from season 2016/17 for data.nba.com.
 
-Play-by-play data collected with help functions from [advanced_pbp_data](https://github.com/shufinskiy/advanced_pbp_data) repository.
+Data collected with scripts, which are located in [`loading`](https://github.com/shufinskiy/nba_data/tree/main/loading) folder. More info about loading data you can read in [README](https://github.com/shufinskiy/nba_data/blob/main/loading/README.md) file in these folder.
 
 Detailed description data can be read in file [description_fields.md](https://github.com/shufinskiy/nba_data/blob/main/description_fields.md).
 
