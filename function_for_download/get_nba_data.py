@@ -1,7 +1,26 @@
-def get_nba_data(seasons=range(1996, 2023), 
-                 data=("datanba", "nbastats", "pbpstats", "shotdetail"),
-                 seasontype='rg',
-                 untar=False):
+from pathlib import Path
+from itertools import product
+import urllib
+import tarfile
+from typing import Union, Sequence
+
+
+def get_nba_data(seasons: Union[Sequence, int] = range(1996, 2023),
+                 data: Union[Sequence, str] = ("datanba", "nbastats", "pbpstats", "shotdetail"),
+                 seasontype: str = 'rg',
+                 untar: bool = False) -> None:
+    """
+    Loading a nba play-by-play dataset from github repository https://github.com/shufinskiy/nba_data
+
+    Args:
+        seasons (Union[Sequence, int]): Sequence or integer of the year of start of season
+        data (Union[Sequence, str]): Sequence or string of data types to load
+        seasontype (str): Part of season: rg - Regular Season, po - Playoffs
+        untar (bool): Logical: do need to untar loaded archive
+
+    Returns:
+        None
+    """
     if isinstance(seasons, int):
         seasons = (seasons,)
     if isinstance(data, str):

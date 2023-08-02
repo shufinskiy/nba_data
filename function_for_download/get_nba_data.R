@@ -1,3 +1,13 @@
+#' Loading a dataset from github
+#' 
+#' @description
+#' Loading a nba play-by-play dataset from github repository https://github.com/shufinskiy/nba_data
+#' 
+#' @param seasons Sequence or integer of the year of start of season
+#' @param data Sequence or string of data types to load
+#' @param seasontype Part of season: rg - Regular Season, po - Playoffs
+#' @param untar do need to untar loaded archive
+#' @return None
 get_nba_data <- function(seasons = seq(1996, 2022), data = c("datanba", "nbastats", "pbpstats", "shotdetail"), 
                          seasontype = 'rg', untar = FALSE){
   
