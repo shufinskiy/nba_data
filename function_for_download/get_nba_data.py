@@ -1,6 +1,6 @@
 from pathlib import Path
 from itertools import product
-import urllib
+import urllib.request
 import tarfile
 from typing import Union, Sequence
 
