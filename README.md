@@ -1,6 +1,13 @@
-### Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2022/23
+## Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2022/23
 
-## Description
+## Update 2022-07-11
+
+- Added playoff play-by-play and shotdetail data for all seasons
+- Added folder [`loading`](https://github.com/shufinskiy/nba_data/tree/main/loading) with scripts for data collection
+- Added folder [`build_dataset`](https://github.com/shufinskiy/nba_data/tree/main/build_dataset) with scripts for build files dataset directory
+- Season 2022/23 added in Kaggle dataset and Google Drive archive
+
+### Description
 Dataset contains play-by-play data from three sources: **stats.nba.com**, **data.nba.com** and **pbpstats.com** and also **shots details**.
 Dataset contains data from season 1996/97 for stats.nba.com and shotdetails, from season 2000/01 for pbpstats.com and from season 2016/17 for data.nba.com.
 
@@ -15,7 +22,7 @@ Python nba_api package for work with NBA API - https://github.com/swar/nba_api
 
 R hoopR package for work with NBA API - https://hoopr.sportsdataverse.org/
 
-## Motivation
+### Motivation
 
 I made this dataset because I want to simplify and speed up work with play-by-play data so that researchers spend their time studying data, not collecting it. Due to the limits on requests on the NBA website, and also because you can get play-by-play of only one game per request, collecting this data is a very long process.
 
@@ -23,7 +30,7 @@ Using this dataset, you can reduce the time to get information about one season 
 
 I also added play-by-play information from other sources: **pbpstats.com** (there is information about the time of ownership and the type of its beginning) and **data.nba.com** (there you can find coordinates of actions on court). This data will enrich information about the progress of each game and hopefully add opportunities to do interesting things.
 
-## Download
+### Download
 
 You can download dataset several ways:
 
@@ -32,7 +39,7 @@ You can download dataset several ways:
 git clone https://github.com/shufinskiy/nba_data.git
 ```
 
-**Download using a programming language**
+**Download using R or Python**
 
 You can write your own loading functions or use ones I wrote for R and Python languages.
 
@@ -127,11 +134,11 @@ def get_nba_data(seasons=range(1996, 2023),
 
 Kaggle [notebook](https://www.kaggle.com/code/brains14482/nba-play-by-play-dataset-r-example) with examples work with dataset (**R**)
 
-**Download from Google Drive (without season 2022/23)**
+**Download from Google Drive**
 
 You can also download full version of the dataset from [GoogleDrive](https://drive.google.com/file/d/1pBBY7JiVLVMmMz_tV5KkTgUhrpulUQtD/view?usp=sharing).
 
-#### Contact me:
+### Contact me:
 
 If you have questions or proposal about dataset, you can write me convenient for you in a way.
 
