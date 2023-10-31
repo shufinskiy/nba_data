@@ -16,8 +16,8 @@ dataset_for_github <- function(files, tar_file, compression = 'xz', compression_
   }
 }
 
-for(season in seq(1996, 2022)){
-  seasontype <- 'po'
+for(season in seq(2023, 2023)){
+  seasontype <- 'rg'
   if(season < 2000){
     datatype <- c('nbastats', 'shotdetail')
   } else if(season < 2016){
