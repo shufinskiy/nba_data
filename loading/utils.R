@@ -564,7 +564,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
         sleep <- sleep + 1
         for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
           if(season < 2016){
-            if(n %in% c("load_pbpstats")){
+            if(n %in% c("load_datanba")){
               next
             }
           }
@@ -575,16 +575,22 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
           }
           
           dt <- do.call(n, list(game_id = i, season = season, gamelog = gamelog))
-          
-          if(n == "load_playbyplayv2"){
-            if (is.null(dt)){
-              early_st <- early_st + 1
-              if (early_st >= early_stop){
-                break
+
+          if (is.null(dt)){
+            early_st <- early_st + 1
+            if (early_st >= early_stop){
+              break
               } else {
                 Sys.sleep(5)
                 next
               }
+          } else if (dim(dt)[1] == 0){
+            early_st <- early_st + 1
+            if (early_st >= early_stop){
+              break
+            } else {
+              Sys.sleep(5)
+              next
             }
           }
           early_st <- 0
