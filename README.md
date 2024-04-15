@@ -1,4 +1,4 @@
-## Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2022/23
+## Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2023/24
 
 ## Update 2023-07-11
 
