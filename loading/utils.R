@@ -514,13 +514,15 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
 #' @return None
 load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5){
   
-  if(datatype %in% c('all', 'pbp')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'datanba', 'pbpstats')){
     exists_folder(path=paste('datasets', season, seasontype, sep = '/'))
-    exists_folder(path=paste('datasets', season, seasontype, 'nbastats', sep = '/'))
-    if (season >= 2000){
+    if(datatype %in% c('all', 'pbp', 'nbastats')){
+      exists_folder(path=paste('datasets', season, seasontype, 'nbastats', sep = '/'))
+    }
+    if (season >= 2000 & datatype %in% c('all', 'pbp', 'pbpstats')){
       exists_folder(path=paste('datasets', season, seasontype, 'pbpstats', sep = '/'))
     }
-    if (season >= 2016){
+    if (season >= 2016 & datatype %in% c('all', 'pbp', 'datanba')){
       exists_folder(path=paste('datasets', season, seasontype, 'datanba', sep ='/'))
     }
   }
@@ -539,7 +541,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
   early_st <- 0
   sleep <- 1
 
-  if(datatype %in% c('all', 'pbp')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'datanba', 'pbpstats')){
     gamelog <- league_game_log(season = season, SeasonType = request_seasontype)
     if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
@@ -553,6 +555,17 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
       exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      
+      if(datatype == 'nbastats'){
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
+      } else if(datatype == 'pbpstats'){
+        exists_nbastats <- 0
+        exists_nbadata <- 0
+      } else if(datatype == 'nbadata'){
+        exists_nbastats <- 0
+        exists_pbpstats <- 0
+      }
       
       if(sum(c(exists_nbastats, exists_pbpstats, exists_nbadata)) == 0){
         next
