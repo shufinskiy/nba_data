@@ -447,7 +447,7 @@ load_playbyplayv3 <- function(game_id, season, gamelog, ...){
   if(is.null(nba_data)){
     return(NULL)
   } else {
-    nba_data$gameId <- nba_data$game$gameId
+    nba_data$gameId <- json$game$gameId
   }
   
   return(nba_data)
@@ -548,10 +548,13 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
 #' @return None
 load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5){
   
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'datanba', 'pbpstats')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats')){
     exists_folder(path=paste('datasets', season, seasontype, sep = '/'))
     if(datatype %in% c('all', 'pbp', 'nbastats')){
       exists_folder(path=paste('datasets', season, seasontype, 'nbastats', sep = '/'))
+    }
+    if(datatype %in% c('all', 'pbp', 'nbastatsv3')){
+      exists_folder(path=paste('datasets', season, seasontype, 'nbastatsv3', sep = '/'))
     }
     if (season >= 2000 & datatype %in% c('all', 'pbp', 'pbpstats')){
       exists_folder(path=paste('datasets', season, seasontype, 'pbpstats', sep = '/'))
@@ -575,7 +578,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
   early_st <- 0
   sleep <- 1
 
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'datanba', 'pbpstats')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats')){
     gamelog <- league_game_log(season = season, SeasonType = request_seasontype)
     if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
@@ -587,21 +590,29 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
     
     for (i in games_id){
       exists_nbastats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_nbastatsv3 <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastatsv3', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       
       if(datatype == 'nbastats'){
+        exists_nbastatsv3 <- 0
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
+      } else if(datatype == 'nbastatsv3'){
+        exists_nbastats <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
       } else if(datatype == 'pbpstats'){
         exists_nbastats <- 0
+        exists_nbastatsv3 <- 0
         exists_nbadata <- 0
-      } else if(datatype == 'nbadata'){
+      } else if(datatype == 'datanba'){
         exists_nbastats <- 0
+        exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
       }
       
-      if(sum(c(exists_nbastats, exists_pbpstats, exists_nbadata)) == 0){
+      if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats, exists_nbadata)) == 0){
         next
       } else {
         if (sleep %% 100 == 0){
@@ -609,7 +620,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
         }
         
         sleep <- sleep + 1
-        for(n in c("load_playbyplayv2"[exists_nbastats], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
+        for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
           if(season < 2016){
             if(n %in% c("load_datanba")){
               next
@@ -643,6 +654,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
           early_st <- 0
           pbp_folder <- switch(n,
                                "load_playbyplayv2" = "nbastats",
+                               "load_playbyplayv3" = "nbastatsv3",
                                "load_pbpstats" = "pbpstats",
                                "load_datanba" = "datanba")
 
