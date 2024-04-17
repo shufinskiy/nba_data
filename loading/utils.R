@@ -430,6 +430,40 @@ load_playbyplayv2 <- function(game_id, season, gamelog, ...){
 #' 
 #' @param name description
 #' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
+#' @return A play-by-play data.frame from nba.stats.com
+load_playbyplayv3 <- function(game_id, season, gamelog, ...){
+  url <- 'https://stats.nba.com/stats/playbyplayv3?'
+  
+  ## application request counter
+  count <- 1
+  
+  response <- requests_nba(url, count, 5, GameID = game_id, ...)
+  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
+  
+  nba_data <- tryCatch({json$game$actions}, 
+                       error = function(e) return(NULL))
+  if(is.null(nba_data)){
+    return(NULL)
+  } else {
+    nba_data$gameId <- nba_data$game$gameId
+  }
+  
+  return(nba_data)
+}
+
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return A shotdetail data.frame
 load_shotchartdetail <- function(team_id, season, ...){

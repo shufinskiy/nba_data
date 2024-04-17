@@ -37,6 +37,12 @@ nba_params <- list(
     StartPeriod = 1
   ),
   
+  playbyplayv3 = list(
+    EndPeriod = 10,
+    GameID = 0,
+    StartPeriod = 1
+  ),
+  
   shotchartdetail = list(
     AheadBehind = '',
     CFID = '',
