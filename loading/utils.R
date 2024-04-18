@@ -121,6 +121,32 @@ get_endpoints <- function(url){
 
 
 #' title
+#'
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @return description
+unlist_columns <- function(data, column){
+  unlist(sapply(seq(1, length(data[[column]])), function(x){
+    qualifiers <- data[[column]][[x]]
+    if(length(qualifiers) == 1){
+      return(qualifiers)
+    } else if(length(qualifiers > 1)){
+      qualifiers <- paste(qualifiers, collapse = ', ')
+    } else {
+      qualifiers <- ''
+    }
+    return(qualifiers)
+  }, USE.NAMES = FALSE))
+}
+
+
+#' title
 #' 
 #' @description
 #' A short description...
@@ -355,6 +381,36 @@ load_datanba <- function(game_id, season, gamelog, ...){
 #' @param name description
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
+#' @return A play-by-play data.frame from cdn.nba.com
+load_cdnnba <- function(game_id, season, gamelog, ...){
+  url <- paste0("https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
+  
+  count <- 1
+  response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
+  json <- jsonlite::fromJSON(httr::content(response, as = "text", encoding = 'UTF-8'))
+  
+  data <- json$game$actions
+  data$gameId <- json$game$gameId
+  
+  data$qualifiers <- unlist_columns(data, "qualifiers")
+  data$personIdsFilter <- unlist_columns(data, "personIdsFilter")
+  
+  return(data)
+}
+
+
+#' title
+#' 
+#' @description
+#' A short description...
+#' 
+#' @details
+#' Additional details...
+#' 
+#' @param name description
+#' @param name description
+#' @param name description
+#' @param \\dots Additional arguments passed to requests_nba().
 #' @return A play-by-play data.frame from pbpstats.com
 load_pbpstats <- function(game_id, season, gamelog, ...){
   
@@ -548,7 +604,7 @@ load_season_shotchartdetail <- function(season, seasontype, early_stop = 5){
 #' @return None
 load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype = 'rg', early_stop = 5){
   
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba')){
     exists_folder(path=paste('datasets', season, seasontype, sep = '/'))
     if(datatype %in% c('all', 'pbp', 'nbastats')){
       exists_folder(path=paste('datasets', season, seasontype, 'nbastats', sep = '/'))
@@ -561,6 +617,9 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
     }
     if (season >= 2016 & datatype %in% c('all', 'pbp', 'datanba')){
       exists_folder(path=paste('datasets', season, seasontype, 'datanba', sep ='/'))
+    }
+    if (season >= 2019 & datatype %in% c('all', 'pbp', 'cdnnba')){
+      exists_folder(path=paste('datasets', season, seasontype, 'cdnnba', sep ='/'))
     }
   }
   if(datatype %in% c('all', 'shot')){
@@ -578,7 +637,7 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
   early_st <- 0
   sleep <- 1
 
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba')){
     gamelog <- league_game_log(season = season, SeasonType = request_seasontype)
     if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
@@ -593,26 +652,36 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
       exists_nbastatsv3 <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'nbastatsv3', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_cdnnba <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 'cdnnba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       
       if(datatype == 'nbastats'){
         exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
+        exists_cdnnba <- 0
       } else if(datatype == 'nbastatsv3'){
         exists_nbastats <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
+        exists_cdnnba <- 0
       } else if(datatype == 'pbpstats'){
         exists_nbastats <- 0
         exists_nbastatsv3 <- 0
         exists_nbadata <- 0
+        exists_cdnnba <- 0
       } else if(datatype == 'datanba'){
         exists_nbastats <- 0
         exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
+        exists_cdnnba <- 0
+      } else if(datatype == 'cdnnba'){
+        exists_nbastats <- 0
+        exists_nbastatsv3 <- 0
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
       }
       
-      if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats, exists_nbadata)) == 0){
+      if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats, exists_nbadata, exists_cdnnba)) == 0){
         next
       } else {
         if (sleep %% 100 == 0){
@@ -620,14 +689,20 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
         }
         
         sleep <- sleep + 1
-        for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats], "load_datanba"[exists_nbadata])){
+        for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats], 
+                   "load_datanba"[exists_nbadata], "load_cdnnba"[exists_cdnnba])){
+          if(season < 2019){
+            if(n == "load_cdnnba"){
+              next
+            }
+          }
           if(season < 2016){
-            if(n %in% c("load_datanba")){
+            if(n == "load_datanba"){
               next
             }
           }
           if(season < 2000){
-            if(n %in% c("load_datanba", "load_pbpstats")){
+            if(n  == "load_pbpstats"){
               next
             }
           }
@@ -656,7 +731,8 @@ load_season <- function(season, start=1, end=1230, datatype = 'all', seasontype 
                                "load_playbyplayv2" = "nbastats",
                                "load_playbyplayv3" = "nbastatsv3",
                                "load_pbpstats" = "pbpstats",
-                               "load_datanba" = "datanba")
+                               "load_datanba" = "datanba",
+                               "load_cdnnba" = "cdnnba")
 
           write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets', season, seasontype, 
                                                                     pbp_folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))), 
