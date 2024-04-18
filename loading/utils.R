@@ -231,11 +231,11 @@ trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_r
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return response from NBA API
-requests_pbpstats <- function(url, season, team_id, game_date, season_type, count, n_rep=5, ...){
+requests_pbpstats <- function(url, season, team_id, game_date, league_id, season_type, count, n_rep=5, ...){
   
   pbpstats_params <- list(
     TeamId = team_id,
-    Season = paste(season, substr(season + 1, 3, 4), sep = '-'),
+    Season = if(league_id == "00") paste(season, substr(season + 1, 3, 4), sep = '-') else as.character(season),
     SeasonType = I(season_type),
     OffDef = 'Offense',
     StartType = 'All',
@@ -433,22 +433,27 @@ load_cdnnba <- function(game_id, season, gamelog, league_id, ...){
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return A play-by-play data.frame from pbpstats.com
-load_pbpstats <- function(game_id, season, gamelog, ...){
+load_pbpstats <- function(game_id, season, gamelog, league_id, ...){
   
   ### Get game date
   if (season < 2000){
     message('Statistics on pbpstats.com start from 2000/01 season')
     return(NULL)
   }
-  season_type <- ifelse(substr(game_id, 1, 3) == '002', 'Regular%2BSeason', 'Playoffs')
+  season_type <- ifelse(substr(game_id, 1, 3) %in% c('002', '102'), 'Regular%2BSeason', 'Playoffs')
   game_date <- unique(gamelog[gamelog$GAME_ID == game_id, "GAME_DATE"])
   team_id <- gamelog[gamelog$GAME_ID == game_id, "TEAM_ID"]
   
   ### Get offense possessions teams
   count <- 1
-  url <- 'https://api.pbpstats.com/get-possessions/nba'
+  if(league_id == '00'){
+    url <- 'https://api.pbpstats.com/get-possessions/nba'
+  } else {
+    url <- 'https://api.pbpstats.com/get-possessions/wnba'
+  }
   
-  response <- lapply(team_id, requests_pbpstats, url = url, season = season, game_date = game_date, season_type = season_type, count = count, n_rep = 5)
+  response <- lapply(team_id, requests_pbpstats, url = url, season = season, game_date = game_date, 
+                     league_id = league_id, season_type = season_type, count = count, n_rep = 5)
   
   pbp_data <- dplyr::bind_rows(lapply(response, function(x){
     json <- jsonlite::fromJSON(httr::content(x, as = "text", encoding = 'UTF-8'))
@@ -682,7 +687,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
     if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
     } else {
-      if(league == "00"){
+      if(league_id == "00"){
         prefix <- '002'
       } else {
         prefix <- '102'
