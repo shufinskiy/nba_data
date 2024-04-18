@@ -395,8 +395,13 @@ load_datanba <- function(game_id, season, gamelog, ...){
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return A play-by-play data.frame from cdn.nba.com
-load_cdnnba <- function(game_id, season, gamelog, ...){
-  url <- paste0("https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
+load_cdnnba <- function(game_id, season, gamelog, league_id, ...){
+  if(league_id == "00"){
+    url <- paste0("https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
+  } else {
+    url <- paste0("https://cdn.wnba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
+  }
+  
   
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
@@ -674,9 +679,14 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
     if(request_seasontype == 'Playoffs'){
       games_id <- unique(gamelog$GAME_ID)
     } else {
+      if(league == "00"){
+        prefix <- '002'
+      } else {
+        prefix <- '102'
+      }
       start <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(start)), collapse = ''), start)))
       end <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(end)), collapse = ''), end)))
-      games_id <- sapply(seq(start, end), function(x) paste0('002', x))
+      games_id <- sapply(seq(start, end), function(x) paste0(prefix, x))
     }
 
     for (i in games_id){
