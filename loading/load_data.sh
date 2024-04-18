@@ -12,6 +12,7 @@ Help()
    echo "       --season   season (start year) for play-by-play information"
    echo "   -s, --start    number of first game of season for play-by-play information"
    echo "   -e, --end      number of last game of season for play-by-play information"
+   echo "   -l, --league   league name: nba or wnba"
    echo "   -d, --datatype type of data received:"
    echo "                     all - play-by-play and shotdetail data"
    echo "                     pbp - Only play-by-play data"
@@ -39,6 +40,8 @@ while [[ -n "$1" ]]; do
 		-e) end="$2"; shift;;
 		--end) end="$2"; shift;;
 		--stop) stop="$2"; shift;;
+		-l) league="$2"; shift;;
+		-league) league="$2"; shift;;
 		-d) datatype="$2"; shift;;
 		--datatype) datatype="$2"; shift;;
 		-st) seasontype="$2"; shift;;
@@ -52,16 +55,17 @@ while [[ -n "$1" ]]; do
 	shift
 done
 
-for VAR in nloop season start end stop datatype seasontype verbose
+for VAR in nloop season start end league stop datatype seasontype verbose
 do
 	if [ -v $VAR ]
 		then :
 		else
 			case $VAR in
 				nloop) nloop=1;;
-				season) season=2020;;
+				season) season=2023;;
 				start) start=1;;
 				end) end=1230;;
+				league) league='nba';;
 				stop) stop=5;;
 				datatype) datatype='all';;
 				seasontype) seasontype='rg';;
@@ -73,6 +77,6 @@ done
 
 for ((i=0; i<$nloop; i++))
 do
-	./load_data.R --season $season --start $start --end $end --stop $stop --datatype $datatype --seasontype $seasontype --verbose $verbose
+	./load_data.R --season $season --start $start --end $end --league $league --stop $stop --datatype $datatype --seasontype $seasontype --verbose $verbose
 	sleep 120
 done
