@@ -39,9 +39,9 @@ while [[ -n "$1" ]]; do
 		--start) start="$2"; shift;;
 		-e) end="$2"; shift;;
 		--end) end="$2"; shift;;
-		--stop) stop="$2"; shift;;
 		-l) league="$2"; shift;;
-		-league) league="$2"; shift;;
+		--league) league="$2"; shift;;
+    --stop) stop="$2"; shift;;
 		-d) datatype="$2"; shift;;
 		--datatype) datatype="$2"; shift;;
 		-st) seasontype="$2"; shift;;
