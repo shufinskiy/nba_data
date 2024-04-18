@@ -506,13 +506,17 @@ load_playbyplayv2 <- function(game_id, season, gamelog, league_id, ...){
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return A play-by-play data.frame from nba.stats.com
-load_playbyplayv3 <- function(game_id, season, gamelog, ...){
-  url <- 'https://stats.nba.com/stats/playbyplayv3?'
+load_playbyplayv3 <- function(game_id, season, gamelog, league_id, ...){
+  if(league_id == "00"){
+    url <- 'https://stats.nba.com/stats/playbyplayv3?'
+  } else {
+    url <- 'https://stats.wnba.com/stats/playbyplayv3?'
+  }
   
   ## application request counter
   count <- 1
   
-  response <- requests_nba(url, count, 5, GameID = game_id, ...)
+  response <- requests_nba(url, count, 5, GameID = game_id, LeagueID = league_id, ...)
   json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   
   nba_data <- tryCatch({json$game$actions}, 
