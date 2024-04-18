@@ -365,8 +365,12 @@ league_game_log <- function(season, league_id, ...){
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return A play-by-play data.frame from data.stats.com
-load_datanba <- function(game_id, season, gamelog, ...){
-  url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", game_id, "_full_pbp.json")
+load_datanba <- function(game_id, season, gamelog, league_id, ...){
+  if(league_id == "00"){
+    url <- paste0("https://data.nba.com/data/v2015/json/mobile_teams/nba/", season, "/scores/pbp/", game_id, "_full_pbp.json")
+  } else {
+    url <- paste0("https://data.wnba.com/data/v2015/json/mobile_teams/wnba/", season, "/scores/pbp/", game_id, "_full_pbp.json")
+  }
   
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
@@ -401,7 +405,6 @@ load_cdnnba <- function(game_id, season, gamelog, league_id, ...){
   } else {
     url <- paste0("https://cdn.wnba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
   }
-  
   
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
