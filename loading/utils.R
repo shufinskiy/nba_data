@@ -435,11 +435,6 @@ load_cdnnba <- function(game_id, season, gamelog, league_id, ...){
 #' @return A play-by-play data.frame from pbpstats.com
 load_pbpstats <- function(game_id, season, gamelog, league_id, ...){
   
-  ### Get game date
-  if (season < 2000){
-    message('Statistics on pbpstats.com start from 2000/01 season')
-    return(NULL)
-  }
   season_type <- ifelse(substr(game_id, 1, 3) %in% c('002', '102'), 'Regular%2BSeason', 'Playoffs')
   game_date <- unique(gamelog[gamelog$GAME_ID == game_id, "GAME_DATE"])
   team_id <- gamelog[gamelog$GAME_ID == game_id, "TEAM_ID"]
@@ -644,21 +639,28 @@ load_season_shotchartdetail <- function(season, seasontype, league_id, teams_id,
 #' @return None
 load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'all', seasontype = 'rg', early_stop = 5){
   
+  season_limit <- list(
+    ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba
+    "00" = c(1996, 2000, 2016, 2019),
+    "10" = c(1997, 2009, 2017, 2022)
+  )
+  season_limit <- if(league == 'nba') season_limit[['00']] else season_limit[['10']]
+  
   if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba')){
     exists_folder(path=paste('datasets', season, seasontype, league, sep = '/'))
-    if(datatype %in% c('all', 'pbp', 'nbastats')){
+    if(season >= season_limit[1] & datatype %in% c('all', 'pbp', 'nbastats')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'nbastats', sep = '/'))
     }
-    if(datatype %in% c('all', 'pbp', 'nbastatsv3')){
+    if(season >= season_limit[1] & datatype %in% c('all', 'pbp', 'nbastatsv3')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'nbastatsv3', sep = '/'))
     }
-    if (season >= 2000 & datatype %in% c('all', 'pbp', 'pbpstats')){
+    if (season >= season_limit[2] & datatype %in% c('all', 'pbp', 'pbpstats')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'pbpstats', sep = '/'))
     }
-    if (season >= 2016 & datatype %in% c('all', 'pbp', 'datanba')){
+    if (season >= season_limit[3] & datatype %in% c('all', 'pbp', 'datanba')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'datanba', sep ='/'))
     }
-    if (season >= 2019 & datatype %in% c('all', 'pbp', 'cdnnba')){
+    if (season >= season_limit[4] & datatype %in% c('all', 'pbp', 'cdnnba')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'cdnnba', sep ='/'))
     }
   }
@@ -741,18 +743,23 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
         sleep <- sleep + 1
         for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats],
                    "load_datanba"[exists_nbadata], "load_cdnnba"[exists_cdnnba])){
-          if(season < 2019){
-            if(n == "load_cdnnba"){
+          if(season < season_limit[1]){
+            if(n %in% c("load_playbyplayv2", "load_playbyplayv3")){
               next
             }
           }
-          if(season < 2016){
+          if(season < season_limit[2]){
+            if(n  == "load_pbpstats"){
+              next
+            }
+          }
+          if(season < season_limit[3]){
             if(n == "load_datanba"){
               next
             }
           }
-          if(season < 2000){
-            if(n  == "load_pbpstats"){
+          if(season < season_limit[4]){
+            if(n == "load_cdnnba"){
               next
             }
           }
