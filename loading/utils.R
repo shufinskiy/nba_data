@@ -696,7 +696,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
       }
       start <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(start)), collapse = ''), start)))
       end <- as.integer(paste0(paste0(substr(season, 3, 4), '0'), paste0(paste(rep('0', 4 - nchar(end)), collapse = ''), end)))
-      games_id <- sapply(seq(start, end), function(x) paste0(prefix, x))
+      games_id <- sapply(seq(start, end), function(x) if(nchar(x) == 7) paste0(prefix, x) else paste0(prefix, 0, x))
     }
 
     for (i in games_id){
