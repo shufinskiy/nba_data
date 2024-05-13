@@ -21,9 +21,7 @@ check_datatype <- function(season, folder = '../loading/datasets', seasontype = 
   return(check_dir)
 }
 
-check_datatype(1996)
-
-for(season in seq(1996, 1996)){
+for(season in seq(1997, 1998)){
   seasontype <- 'po'
   if(season < 2000){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
