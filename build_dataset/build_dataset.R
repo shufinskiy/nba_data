@@ -21,16 +21,21 @@ check_datatype <- function(season, folder = '../loading/datasets', seasontype = 
   return(check_dir)
 }
 
-for(season in seq(1997, 1998)){
-  seasontype <- 'po'
+dt <- 'cdnnba'
+seasontype <- 'rg'
+
+for(season in seq(2020, 2023)){
   if(season < 2000){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
   } else if(season < 2016){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats')
   } else if(season < 2019){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba')
-  }else {
+  } else {
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'cdnnba')
+  }
+  if(!is.na(dt)){
+    datatype <- dt
   }
   for(data in datatype){
     dt_exists <- check_datatype(season = season, seasontype = seasontype, data = data)
