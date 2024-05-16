@@ -45,9 +45,12 @@ You can write your own loading functions or use ones I wrote for R and Python la
 
 **R:**
 ```r
-get_nba_data <- function(seasons = seq(1996, 2022), data = c("datanba", "nbastats", "pbpstats", "shotdetail"), 
-                         seasontype = 'rg', untar = FALSE){
-  
+load_nba_data <- function(path = getwd(),
+                          seasons = seq(1996, 2023),
+                          data = c("datanba", "nbastats", "pbpstats", "shotdetail", "cdnnba", "nbastatsv3"),
+                          seasontype = 'rg',
+                          untar = FALSE){
+
   if(seasontype == 'rg'){
     df <- expand.grid(data, seasons)
     need_data <- paste(df$Var1, df$Var2, sep = "_")
@@ -71,15 +74,19 @@ get_nba_data <- function(seasons = seq(1996, 2022), data = c("datanba", "nbastat
   
   need_name <- name_v[which(name_v %in% need_data)]
   need_element <- element_v[which(name_v %in% need_data)]
+
+  if(!dir.exists(path)){
+    dir.create(path)
+  }
   
   for(i in seq_along(need_element)){
-    destfile <- paste0(need_name[i], ".tar.xz")
+    destfile <- paste0(path, '/', need_name[i], ".tar.xz")
     download.file(need_element[i], destfile = destfile)
     if(untar){
-      untar(destfile, paste0(need_name[i], ".csv"))
+      untar(destfile, paste0(need_name[i], ".csv"), exdir = path)
       unlink(destfile)
     }
-  }  
+  }
 }
 ```
 
