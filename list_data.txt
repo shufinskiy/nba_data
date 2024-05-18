@@ -210,3 +210,7 @@ nbastatsv3_po_2020=https://github.com/shufinskiy/nba_data/raw/main/datasets/nbas
 nbastatsv3_po_2021=https://github.com/shufinskiy/nba_data/raw/main/datasets/nbastatsv3_po_2021.tar.xz
 nbastatsv3_po_2022=https://github.com/shufinskiy/nba_data/raw/main/datasets/nbastatsv3_po_2022.tar.xz
 nbastatsv3_po_2023=https://github.com/shufinskiy/nba_data/raw/main/datasets/nbastatsv3_po_2023.tar.xz
+wnba_cdnnba_2022=https://github.com/shufinskiy/nba_data/raw/main/datasets/wnba_cdnnba_2022.tar.xz
+wnba_cdnnba_2022=https://github.com/shufinskiy/nba_data/raw/main/datasets/wnba_cdnnba_2023.tar.xz
+wnba_cdnnba_po_2022=https://github.com/shufinskiy/nba_data/raw/main/datasets/wnba_cdnnba_po_2022.tar.xz
+wnba_cdnnba_po_2023=https://github.com/shufinskiy/nba_data/raw/main/datasets/wnba_cdnnba_po_2023.tar.xz
