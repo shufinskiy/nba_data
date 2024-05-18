@@ -10,6 +10,7 @@ def load_nba_data(path: Union[Path, str] = Path.cwd(),
                   data: Union[Sequence, str] = ("datanba", "nbastats", "pbpstats",
                                                 "shotdetail", "cdnnba", "nbastatsv3"),
                   seasontype: str = 'rg',
+                  league: str = 'nba',
                   untar: bool = False) -> None:
     """
     Loading a nba play-by-play dataset from github repository https://github.com/shufinskiy/nba_data
@@ -19,6 +20,7 @@ def load_nba_data(path: Union[Path, str] = Path.cwd(),
         seasons (Union[Sequence, int]): Sequence or integer of the year of start of season
         data (Union[Sequence, str]): Sequence or string of data types to load
         seasontype (str): Part of season: rg - Regular Season, po - Playoffs
+        league (str): Name league: NBA or WNBA
         untar (bool): Logical: do need to untar loaded archive
 
     Returns:
@@ -41,6 +43,8 @@ def load_nba_data(path: Union[Path, str] = Path.cwd(),
         need_data_po = tuple(["_".join([data, seasontype, str(season)]) \
                               for (data, seasontype, season) in product(data, ('po',), seasons)])
         need_data = need_data_rg + need_data_po
+    if league.lower() == 'wnba':
+        need_data = ['wnba_' + x for x in need_data]
 
     with urllib.request.urlopen("https://raw.githubusercontent.com/shufinskiy/nba_data/main/list_data.txt") as f:
         v = f.read().decode('utf-8').strip()
