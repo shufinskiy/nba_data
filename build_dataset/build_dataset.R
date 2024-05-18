@@ -3,7 +3,8 @@ build_season_data <- function(season, folder = '../loading/datasets', seasontype
   df <- data.table::rbindlist(lapply(l, data.table::fread), fill = TRUE)
   if(save){
     seasontype <- if (seasontype == 'rg') '_' else '_po_'
-    data.table::fwrite(df, paste0(data, seasontype,  season, '.csv'))
+    league_name <- if (league == 'wnba') 'wnba_' else ''
+    data.table::fwrite(df, paste0(league_name, data, seasontype,  season, '.csv'))
   } else {
     return(df)
   }
@@ -13,6 +14,7 @@ dataset_for_github <- function(files, tar_file, compression = 'xz', compression_
   tar(tar_file, files = files, compression = 'xz', compression_level = 9, tar = 'tar')
   if(file.copy(tar_file, paste0('../datasets/', tar_file))){
     file.remove(tar_file)
+    file.remove(files)
   }
 }
 
@@ -21,15 +23,22 @@ check_datatype <- function(season, folder = '../loading/datasets', seasontype = 
   return(check_dir)
 }
 
-dt <- 'cdnnba'
-seasontype <- 'rg'
+dt <- NA
+st <- 'po'
+league <- 'wnba'
 
-for(season in seq(2020, 2023)){
-  if(season < 2000){
+for(season in seq(1997, 2023)){
+  season_limit <- list(
+    ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba
+    "nba" = c(1996, 2000, 2016, 2020),
+    "wnba" = c(1997, 2009, 2017, 2022)
+  )
+  season_limit <- season_limit[[league]]
+  if(season < season_limit[2]){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
-  } else if(season < 2016){
+  } else if(season < season_limit[3]){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats')
-  } else if(season < 2019){
+  } else if(season < season_limit[4]){
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba')
   } else {
     datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'cdnnba')
@@ -38,11 +47,12 @@ for(season in seq(2020, 2023)){
     datatype <- dt
   }
   for(data in datatype){
-    dt_exists <- check_datatype(season = season, seasontype = seasontype, data = data)
+    dt_exists <- check_datatype(season = season, seasontype = st, league = league, data = data)
     if(dt_exists){
-      build_season_data(season = season, seasontype = seasontype, data = data, save=TRUE)
-      seasontype <- if (seasontype == 'rg') '_' else '_po_'
-      dataset_for_github(files = paste0(data, seasontype, season, '.csv'), tar_file = paste0(data, seasontype, season, '.tar.xz'))
+      build_season_data(season = season, seasontype = st, data = data, league = league, save=TRUE)
+      seasontype <- if (st == 'rg') '_' else '_po_'
+      league_name <- if (league == 'wnba') 'wnba_' else ''
+      dataset_for_github(files = paste0(league_name, data, seasontype, season, '.csv'), tar_file = paste0(league_name, data, seasontype, season, '.tar.xz'))
       seasontype <- if (seasontype == '_') 'rg' else 'po'
     }
   }
