@@ -34,11 +34,12 @@ check_data_from_github <- function(season, seasontype = 'rg', datatype = 'nbasta
   st <- if (seasontype == 'rg') I('Regular+Season') else 'Playoffs'
   gamelog <- league_game_log(season = season, league_id = lid, SeasonType = st)
   
-  game_id_files <- unique(df$GAME_ID)
+  games_id <- if (datatype %in% c('cdnnba', 'nbastatsv3')) 'gameId' else  if (datatype == 'pbpstats') 'GAMEID' else 'GAME_ID'
+    
+  game_id_files <- unique(df[[games_id]])
   game_id_gamelog <- unique(gamelog$GAME_ID)
   
   etalon <- sort(sapply(game_id_gamelog, as.integer, USE.NAMES = FALSE, simplify = TRUE))
-  
   diff <- setdiff(etalon, game_id_files)
   
   if(length(diff) == 0){
@@ -137,18 +138,17 @@ miss_games <- data.frame(season = integer(),
                          league = character(),
                          missing_games = integer(), stringsAsFactors = FALSE)
 
-for(season in seq(1997, 2023)){
+check_data_from_github(season = 2000, datatype = 'pbpstats')
+
+for(season in seq(1996, 2023)){
   for(data in c("datanba", "nbastats", "pbpstats", "cdnnba", "nbastatsv3")){
     for(st in c('rg', 'po')){
-      miss_game <- check_data_from_tmp_files('/home/shuf91/repository/nba_data/loading/datasets/', 
-                                             season = season, 
-                                             seasontype = st,
-                                             datatype = data, 
-                                             league = 'wnba',
-                                             verbose = FALSE)
-      Sys.sleep(2)
+      miss_game <- check_data_from_github(season = season, 
+                                          seasontype = st,
+                                          datatype = data,
+                                          league = 'nba',
+                                          verbose = FALSE)
       miss_games <- rbind(miss_games, miss_game)
     }
   }
 }
-
