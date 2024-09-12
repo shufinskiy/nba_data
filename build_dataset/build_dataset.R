@@ -23,11 +23,21 @@ check_datatype <- function(season, folder = '../loading/datasets', seasontype = 
   return(check_dir)
 }
 
+upd_list_data <- function(path="../list_data.txt", path_data="../datasets/"){
+  l <- list.files(path_data, pattern = "tar.xz")
+  
+  files_str <- sapply(l, function(file_str){
+    paste0(gsub(".tar.xz", "", file_str), "=https://github.com/shufinskiy/nba_data/raw/main/datasets/", file_str)
+  }, USE.NAMES = FALSE)
+  
+  write(files_str, file = file(path), sep="")
+}
+
 dt <- NA
-st <- 'po'
+st <- 'rg'
 league <- 'wnba'
 
-for(season in seq(1997, 2023)){
+for(season in seq(2024, 2024)){
   season_limit <- list(
     ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba
     "nba" = c(1996, 2000, 2016, 2020),
@@ -57,3 +67,5 @@ for(season in seq(1997, 2023)){
     }
   }
 }
+
+upd_list_data()
