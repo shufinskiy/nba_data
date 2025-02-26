@@ -43,6 +43,10 @@ nba_params <- list(
     StartPeriod = 1
   ),
   
+  boxscorematchupsv3 = list(
+    GameID = 0
+  ),
+  
   shotchartdetail = list(
     AheadBehind = '',
     CFID = '',

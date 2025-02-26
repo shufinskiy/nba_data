@@ -622,6 +622,89 @@ load_season_shotchartdetail <- function(season, seasontype, league_id, teams_id,
 }
 
 
+parse_boxscorematchupsv3_json <- function(matchups){
+  data <- matchups %>%
+    purrr::pluck("boxScoreMatchups") %>%
+    dplyr::as_tibble()
+  
+  ids_df <- data %>%
+    data.frame() %>%
+    dplyr::select("gameId","awayTeamId","homeTeamId") %>%
+    dplyr::distinct()
+  
+  home_team_data <- data %>%
+    purrr::pluck("homeTeam")
+  
+  home_team_info <- data.frame(
+    teamId = home_team_data %>% purrr::pluck("teamId"),
+    teamName = home_team_data %>% purrr::pluck("teamName"),
+    teamCity = home_team_data %>% purrr::pluck("teamCity"),
+    teamTricode = home_team_data %>% purrr::pluck("teamTricode"),
+    teamSlug = home_team_data %>% purrr::pluck("teamSlug")
+  )
+  
+  home_team_players <- home_team_data %>%
+    purrr::pluck("players") %>%
+    data.frame(stringsAsFactors = F) %>%
+    tidyr::unnest("matchups", names_sep = "_") %>%
+    tidyr::unnest("matchups_statistics")
+  
+  home_team_players <- ids_df %>%
+    dplyr::bind_cols(home_team_info) %>%
+    dplyr::bind_cols(home_team_players) %>% 
+    janitor::clean_names()
+  
+  away_team_data <- data %>%
+    purrr::pluck("awayTeam")
+  
+  away_team_info <- data.frame(
+    teamId = away_team_data %>% purrr::pluck("teamId"),
+    teamName = away_team_data %>% purrr::pluck("teamName"),
+    teamCity = away_team_data %>% purrr::pluck("teamCity"),
+    teamTricode = away_team_data %>% purrr::pluck("teamTricode"),
+    teamSlug = away_team_data %>% purrr::pluck("teamSlug")
+  )
+  
+  away_team_players <- away_team_data %>%
+    purrr::pluck("players") %>%
+    data.frame(stringsAsFactors = F) %>%
+    tidyr::unnest("matchups", names_sep = "_") %>%
+    tidyr::unnest("matchups_statistics")
+  
+  away_team_players <- ids_df %>%
+    dplyr::bind_cols(away_team_info) %>%
+    dplyr::bind_cols(away_team_players) %>% 
+    janitor::clean_names()
+  
+  matchups_data <- rbind(home_team_players, away_team_players)
+  
+  return(matchups_data)
+}
+
+
+load_matchups<- function(game_id, season, gamelog, league_id, ...){
+  if(league_id == "00"){
+    url <- 'https://stats.nba.com/stats/boxscorematchupsv3?'
+  } else {
+    url <- 'https://stats.wnba.com/stats/boxscorematchupsv3?'
+  }
+  
+  ## application request counter
+  count <- 1
+  
+  response <- requests_nba(url, count, 5, GameID = game_id, LeagueID = league_id, ...)
+  json <- jsonlite::fromJSON(httr::content(response, as = "text"))
+  
+  nba_data <- tryCatch({parse_boxscorematchupsv3_json(json)},
+                       error = function(e) return(NULL))
+  if(is.null(nba_data)){
+    return(NULL)
+  }
+  
+  return(nba_data)
+}
+
+
 #' title
 #' 
 #' @description
@@ -640,13 +723,13 @@ load_season_shotchartdetail <- function(season, seasontype, league_id, teams_id,
 load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'all', seasontype = 'rg', early_stop = 5){
   
   season_limit <- list(
-    ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba
-    "00" = c(1996, 2000, 2016, 2019),
+    ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba, matchups
+    "00" = c(1996, 2000, 2016, 2019, 2017),
     "10" = c(1997, 2009, 2017, 2022)
   )
   season_limit <- if(league == 'nba') season_limit[['00']] else season_limit[['10']]
   
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba', 'matchups')){
     exists_folder(path=paste('datasets', season, seasontype, league, sep = '/'))
     if(season >= season_limit[1] & datatype %in% c('all', 'pbp', 'nbastats')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'nbastats', sep = '/'))
@@ -662,6 +745,9 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
     }
     if (season >= season_limit[4] & datatype %in% c('all', 'pbp', 'cdnnba')){
       exists_folder(path=paste('datasets', season, seasontype, league, 'cdnnba', sep ='/'))
+    }
+    if (season >= season_limit[5] & datatype %in% c('all', 'pbp', 'matchups')){
+      exists_folder(path=paste('datasets', season, seasontype, league, 'matchups', sep ='/'))
     }
   }
 
@@ -683,7 +769,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
   early_st <- 0
   sleep <- 1
 
-  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba')){
+  if(datatype %in% c('all', 'pbp', 'nbastats', 'nbastatsv3', 'datanba', 'pbpstats', 'cdnnba', 'matchups')){
     gamelog <- league_game_log(season = season, league_id = league_id, SeasonType = request_seasontype)
     
     if(request_seasontype == 'Playoffs'){
@@ -705,35 +791,48 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
       exists_pbpstats <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, league, 'pbpstats', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_nbadata <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, league, 'datanba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
       exists_cdnnba <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, league, 'cdnnba', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
+      exists_matchups <- as.integer(!file.exists(suppressWarnings(normalizePath(paste('./datasets', season, seasontype, league, 'matchups', paste0(paste(season, i, sep = '_'), '.csv'), sep = '/')))))
 
       if(datatype == 'nbastats'){
         exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
         exists_cdnnba <- 0
+        exists_matchups <- 0
       } else if(datatype == 'nbastatsv3'){
         exists_nbastats <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
         exists_cdnnba <- 0
+        exists_matchups <- 0
       } else if(datatype == 'pbpstats'){
         exists_nbastats <- 0
         exists_nbastatsv3 <- 0
         exists_nbadata <- 0
         exists_cdnnba <- 0
+        exists_matchups <- 0
       } else if(datatype == 'datanba'){
         exists_nbastats <- 0
         exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
         exists_cdnnba <- 0
+        exists_matchups <- 0
       } else if(datatype == 'cdnnba'){
         exists_nbastats <- 0
         exists_nbastatsv3 <- 0
         exists_pbpstats <- 0
         exists_nbadata <- 0
+        exists_matchups <- 0
+      } else if(datatype == 'matchups'){
+        exists_nbastats <- 0
+        exists_nbastatsv3 <- 0
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
+        exists_cdnnba <- 0
       }
 
-      if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats, exists_nbadata, exists_cdnnba)) == 0){
+      if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats,
+               exists_nbadata, exists_cdnnba, exists_matchups)) == 0){
         next
       } else {
         if (sleep %% 100 == 0){
@@ -742,7 +841,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
 
         sleep <- sleep + 1
         for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats],
-                   "load_datanba"[exists_nbadata], "load_cdnnba"[exists_cdnnba])){
+                   "load_datanba"[exists_nbadata], "load_cdnnba"[exists_cdnnba], "load_matchups"[exists_matchups])){
           if(season < season_limit[1]){
             if(n %in% c("load_playbyplayv2", "load_playbyplayv3")){
               next
@@ -760,6 +859,11 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
           }
           if(season < season_limit[4]){
             if(n == "load_cdnnba"){
+              next
+            }
+          }
+          if(season < season_limit[5]){
+            if(n == "load_matchups"){
               next
             }
           }
@@ -789,7 +893,8 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
                                "load_playbyplayv3" = "nbastatsv3",
                                "load_pbpstats" = "pbpstats",
                                "load_datanba" = "datanba",
-                               "load_cdnnba" = "cdnnba")
+                               "load_cdnnba" = "cdnnba",
+                               "load_matchups" = "matchups")
 
           write.csv(dt, file = suppressWarnings(normalizePath(paste('./datasets', season, seasontype, league,
                                                                     pbp_folder, paste0(paste(season, i, sep = '_'), '.csv'), sep = '/'))),

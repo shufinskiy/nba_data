@@ -22,6 +22,7 @@ Help()
    echo "                     pbpstats - Only pbpstats.com data"
    echo "                     datanba - Only data.nba.com data"
    echo "                     cdnnba - Only cdn.nba.com data"
+   echo "                     matchups - Only matchups data from nba.stats.com"
    echo "   -st, --seasontype type of season:"
    echo "                     rg - Regular Season"
    echo "                     po - Playoffs"
