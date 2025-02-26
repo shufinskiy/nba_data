@@ -1,4 +1,4 @@
-#! /opt/R/4.0.2/bin/Rscript --vanilla
+#! /usr/lib/R/bin/Rscript --vanilla
 
 source('helpers.R')
 source('utils.R')
