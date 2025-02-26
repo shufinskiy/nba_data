@@ -1,6 +1,9 @@
-## Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2023/24
+## Dataset NBA  play-by-play data and shotdetails from 1996/1997 to 2024/25
 
-## Update 2023-07-11
+## Update 2025-02-26
+ - Added matchups NBA data from 2017/18 to 2024/25
+
+### Update 2023-07-11
 
 - Added playoff play-by-play and shotdetail data for all seasons
 - Added folder [`loading`](https://github.com/shufinskiy/nba_data/tree/main/loading) with scripts for data collection
