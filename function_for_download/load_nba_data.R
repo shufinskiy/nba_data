@@ -15,7 +15,8 @@
 #' @export
 load_nba_data <- function(path = getwd(),
                           seasons = seq(1996, 2024),
-                          data = c("datanba", "nbastats", "pbpstats", "shotdetail", "cdnnba", "nbastatsv3"),
+                          data = c("datanba", "nbastats", "pbpstats", "shotdetail", 
+                                   "cdnnba", "nbastatsv3", "matchups"),
                           seasontype = 'rg',
                           league = 'nba',
                           in_memory = FALSE,
