@@ -725,7 +725,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
   season_limit <- list(
     ## order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba, matchups
     "00" = c(1996, 2000, 2016, 2019, 2017),
-    "10" = c(1997, 2009, 2017, 2022)
+    "10" = c(1997, 2009, 2017, 2022, 3000)
   )
   season_limit <- if(league == 'nba') season_limit[['00']] else season_limit[['10']]
   
