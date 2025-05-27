@@ -35,26 +35,39 @@ upd_list_data <- function(path="../list_data.txt", path_data="../datasets/"){
 
 dt <- NA
 st <- 'rg'
-league <- 'nba'
+league <- 'wnba'
 
-for(season in seq(2024, 2024)){
+for(season in seq(2025, 2025)){
   season_limit <- list(
     # order limits: nbastats(v2 and v3),pbpstats, datanba, cdnnba, matchups
     "nba" = c(1996, 2000, 2016, 2020, 2017),
     "wnba" = c(1997, 2009, 2017, 2022)
   )
   season_limit <- season_limit[[league]]
-  if(season < season_limit[2]){
-    datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
-  } else if(season < season_limit[3]){
-    datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats')
-  } else if(season < season_limit[5]){
-    datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba')
-  } else if(season < season_limit[4]){
-    datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'matchups')
+  if (league == 'nba'){
+    if(season < season_limit[2]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
+    } else if(season < season_limit[3]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats')
+    } else if(season < season_limit[5]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba')
+    } else if(season < season_limit[4]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'matchups')
+    } else {
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'matchups', 'cdnnba')
+    }   
   } else {
-    datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'matchups', 'cdnnba')
+    if(season < season_limit[2]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail')
+    } else if(season < season_limit[3]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats')
+    } else if(season < season_limit[4]){
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba')
+    } else {
+      datatype <- c('nbastats', 'nbastatsv3', 'shotdetail', 'pbpstats', 'datanba', 'cdnnba')
+    }
   }
+
   if(!is.na(dt)){
     datatype <- dt
   }
