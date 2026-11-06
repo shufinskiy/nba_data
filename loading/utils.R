@@ -168,11 +168,11 @@ unlist_columns <- function(data, column){
 #' @param name description
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return response from NBA API
-requests_nba <- function(url, count, n_rep, ...){
+requests_nba <- function(url, count, n_rep, timeout = 20, ...){
   argg <- c(as.list(environment()), list(...))
   param_nba <- get_endpoints(url)
   param_nba[intersect(names(argg), names(param_nba))] <- argg[intersect(names(argg), names(param_nba))]
-  res <- trycatch_nbastats(url, 10, nba_request_headers, param_nba, count, n_rep, ...)
+  res <- trycatch_nbastats(url, timeout, nba_request_headers, param_nba, count, n_rep, ...)
   return(res)
 }
 
@@ -194,7 +194,6 @@ requests_nba <- function(url, count, n_rep, ...){
 #' @param \\dots Additional arguments passed to requests_nba().
 #' @return response from NBA API
 trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_rep, ...){
-
   tryCatch({res <- httr::GET(url = url, httr::timeout(t), httr::add_headers(nba_request_headers), query = param_nba)
   if(res$status_code != 200 | res$url == 'https://www.nba.com/stats/error/') {stop()}; return(res)},
   error = function(e){
@@ -206,7 +205,7 @@ trycatch_nbastats <- function(url, t, nba_request_headers, param_nba, count, n_r
     if (count < n_rep){
       message(paste0(Sys.time(), mes, n_rep - count))
       Sys.sleep(2)
-      return(requests_nba(url, count + 1, n_rep, ...))
+      return(requests_nba(url, count + 1, n_rep, timeout = t, ...))
     } else{
       stop(Sys.time(), ' No response was received from nbastats for ', n_rep, ' request attempts')
     }
@@ -337,7 +336,7 @@ league_game_log <- function(season, league_id, ...){
   }
   
   count <- 1
-  response <- requests_nba(url, count, 5, Season = season, LeagueID = league_id, ...)
+  response <- requests_nba(url, count, 5, timeout = 30, Season = season, LeagueID = league_id, ...)
   json <- jsonlite::fromJSON(httr::content(response, as = "text"))
   
   nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), 
@@ -405,7 +404,6 @@ load_cdnnba <- function(game_id, season, gamelog, league_id, ...){
   } else {
     url <- paste0("https://cdn.wnba.com/static/json/liveData/playbyplay/playbyplay_", game_id, ".json")
   }
-  
   count <- 1
   response <- trycatch_datanba(url, 10, nba_request_headers, count, 5)
   json <- jsonlite::fromJSON(httr::content(response, as = "text", encoding = 'UTF-8'))
@@ -488,10 +486,10 @@ load_playbyplayv2 <- function(game_id, season, gamelog, league_id, ...){
   
   response <- requests_nba(url, count, 5, GameID = game_id, LeagueID = league_id, ...)
   json <- jsonlite::fromJSON(httr::content(response, as = "text"))
-  
   nba_data <- tryCatch({data.frame(matrix(unlist(json$resultSets$rowSet[[1]]), 
                                           ncol = length(json$resultSets$headers[[1]]), byrow = FALSE))}, 
                        error = function(e) return(NULL))
+
   if(is.null(nba_data)){
     return(NULL)
   }
@@ -830,6 +828,17 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
         exists_nbadata <- 0
         exists_cdnnba <- 0
       }
+      
+      if(season >= 2025 & league_id == "00"){
+        exists_nbastats <- 0
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
+        exists_cdnnba <- 0
+      }
+      if(season >= 2026 & league_id == "10"){
+        exists_pbpstats <- 0
+        exists_nbadata <- 0
+      }
 
       if(sum(c(exists_nbastats, exists_nbastatsv3, exists_pbpstats,
                exists_nbadata, exists_cdnnba, exists_matchups)) == 0){
@@ -842,6 +851,7 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
         sleep <- sleep + 1
         for(n in c("load_playbyplayv2"[exists_nbastats], "load_playbyplayv3"[exists_nbastatsv3], "load_pbpstats"[exists_pbpstats],
                    "load_datanba"[exists_nbadata], "load_cdnnba"[exists_cdnnba], "load_matchups"[exists_matchups])){
+          
           if(season < season_limit[1]){
             if(n %in% c("load_playbyplayv2", "load_playbyplayv3")){
               next
@@ -867,7 +877,6 @@ load_season <- function(season, start=1, end=1230, league = 'nba', datatype = 'a
               next
             }
           }
-
           dt <- do.call(n, list(game_id = i, season = season, gamelog = gamelog, league_id = league_id))
 
           if (is.null(dt)){
